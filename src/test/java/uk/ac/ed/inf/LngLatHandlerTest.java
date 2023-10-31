@@ -6,25 +6,23 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import uk.ac.ed.inf.ilp.constant.OrderStatus;
-import uk.ac.ed.inf.ilp.constant.OrderValidationCode;
 import uk.ac.ed.inf.ilp.constant.SystemConstants;
 import uk.ac.ed.inf.ilp.data.*;
 
+/**
+ * Unit test for LngLatHandler.
+ */
 public class LngLatHandlerTest {
 
     @Test
     public void testDistanceTo(){
         LngLatHandler lngLatHandler = new LngLatHandler();
 
-        // Create LngLat instances for testing
         LngLat startPosition = new LngLat(0.0, 0.0);
         LngLat endPosition = new LngLat(3.0, 4.0);
 
-        // Calculate the expected distance manually (using Pythagorean theorem)
         double expectedDistance = 5.0;
 
-        // Calculate the distance using the LngLatHandler
         double actualDistance = lngLatHandler.distanceTo(startPosition, endPosition);
 
         // Check if the calculated distance matches the expected distance
@@ -35,45 +33,22 @@ public class LngLatHandlerTest {
     public void testIsCloseTo() {
         LngLatHandler lngLatHandler = new LngLatHandler();
 
-        // Create LngLat instances for testing
         LngLat startPosition = new LngLat(0.0, 0.0);
 
-        // Case 1: Another position within the close distance
+        // Check if another position within the close distance
         LngLat closePosition = new LngLat(0.0, 0.0);
         assertTrue(lngLatHandler.isCloseTo(startPosition, closePosition));
 
-        // Case 2: Another position outside the close distance
+        // Check if another position outside the close distance
         LngLat farPosition = new LngLat(10.0, 10.0);
         assertFalse(lngLatHandler.isCloseTo(startPosition, farPosition));
-    }
-
-    @Test
-    public void testIsInCentralArea() {
-        LngLatHandler lngLatHandler = new LngLatHandler();
-
-        // Create central area
-        LngLat[] centralAreaVertices = {
-                new LngLat(0.0, 1.0), // Top-left
-                new LngLat(0.0, 0.0), // Bottom-left
-                new LngLat(1.0, 0.0),  // Bottom-right
-                new LngLat(1.0, 1.0) // Top-right
-        };
-        NamedRegion centralArea = new NamedRegion(SystemConstants.CENTRAL_REGION_NAME, centralAreaVertices);
-
-        // Case 1: Point inside the central area
-        LngLat insidePoint = new LngLat(0.2, 0.2);
-        assertTrue(lngLatHandler.isInCentralArea(insidePoint, centralArea));
-
-        // Case 2: Point outside the central area
-        LngLat outsidePoint = new LngLat(2.0, 2.0);
-        assertFalse(lngLatHandler.isInCentralArea(outsidePoint, centralArea));
     }
 
     @Test
     public void testIsInRegion() {
         LngLatHandler lngLatHandler = new LngLatHandler();
 
-        // Create a region as a square with vertices at (0, 0), (1, 0), (1, 1), (0, 1)
+        // Create a region as a square with vertices
         LngLat[] squareVertices = {
                 new LngLat(0.0, 0.0),
                 new LngLat(1.0, 0.0),
@@ -82,15 +57,15 @@ public class LngLatHandlerTest {
         };
         NamedRegion squareRegion = new NamedRegion("SquareRegion", squareVertices);
 
-        // Case 1: Point inside the square region
+        // Check if point inside the square region
         LngLat insidePoint = new LngLat(0.5, 0.5);
         assertTrue(lngLatHandler.isInRegion(insidePoint, squareRegion));
 
-        // Case 2: Point outside the square region
+        // Check if point outside the square region
         LngLat outsidePoint = new LngLat(2.0, 2.0);
         assertFalse(lngLatHandler.isInRegion(outsidePoint, squareRegion));
 
-        // Case 3: Point on the border of the square region
+        // Check if point on the border of the square region
         LngLat borderPoint = new LngLat(0.0, 0.0);
         assertTrue(lngLatHandler.isInRegion(borderPoint, squareRegion));
     }

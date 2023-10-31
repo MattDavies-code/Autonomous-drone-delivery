@@ -12,7 +12,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 /**
- * Unit test for simple App.
+ * Unit test for OrderValidator.
  */
 public class OrderValidatorTest
 {
