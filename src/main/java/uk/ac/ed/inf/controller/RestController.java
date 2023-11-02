@@ -1,9 +1,15 @@
 package uk.ac.ed.inf.controller;
 
-import ch.qos.logback.core.joran.sanity.Pair;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ed.inf.flightPath.FlightPathCalculator;
+import uk.ac.ed.inf.ilp.constant.OrderStatus;
 import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.data.Tuple;
@@ -11,15 +17,35 @@ import uk.ac.ed.inf.data.Tuple;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
+import uk.ac.ed.inf.OrderValidator;
 
 /**
  * Rest Controller
  */
-@RestController
+@org.springframework.web.bind.annotation.RestController
 public class RestController {
+
+    // Beware down below??
+    @Autowired
+    private FlightPathCalculator flightPathCalculator;
+
+
+
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final String restServerUrl = "https://ilp-rest.azurewebsites.net";
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final OrderValidator orderValidator = new OrderValidator(); // Create an instance of your OrderValidator class
+
+    public RestController(FlightPathCalculator flightPathCalculator) {
+        this.flightPathCalculator = flightPathCalculator;
+        //This bit!!!^^^
+
+
+    }
 
     /**
      * get a buffered reader for a resource
@@ -31,31 +57,44 @@ public class RestController {
         return new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(jsonResource))));
     }
 
+    /*
+     * returns the restaurants in the system
+     *
+     * @return array of restaurants
+
+    @GetMapping("/restaurants")
+    public Restaurant[] restaurants() {
+        //return new Gson().fromJson(getBufferedReaderForResource("json/restaurants.json"), Restaurant[].class);
+    }
+    */
     /**
      * returns the restaurants in the system
      *
-     * @return array of suppliers
+     * @return array of restaurants
      */
     @GetMapping("/restaurants")
-    public Restaurant[] restaurants() {
-        return new Gson().fromJson(getBufferedReaderForResource("json/restaurants.json"), Restaurant[].class);
+    public ResponseEntity<List<Restaurant>> restaurants() throws JsonProcessingException {
+        String restaurantsUrl = restServerUrl + "/restaurants";
+        String response = restTemplate.getForObject(restaurantsUrl, String.class);
+        List<Restaurant> restaurants = objectMapper.readValue(response, new TypeReference<List<Restaurant>>() {});
+        return ResponseEntity.ok(restaurants);
     }
 
     /**
      * returns the orders in the system
      *
      * @return array of orders
-     */
+
     @GetMapping("/orders")
     public Order[] orders() {
         return new Gson().fromJson(getBufferedReaderForResource("json/orders.json"), Order[].class);
     }
+    */
 
     /**
      * returns the orders by date in the system
      * @param date the date of the order
      * @return array of orders
-     */
 
     @GetMapping("/orders/{date}")
     public Order[] getOrdersForDay(@PathVariable String date) {
@@ -70,12 +109,32 @@ public class RestController {
 
         return ordersForDay;
     }
+     */
+
+    @GetMapping("/orders/{day}")
+    public ResponseEntity<List<Order>> getOrdersForDay(@PathVariable String day) throws JsonProcessingException {
+        String ordersUrl = restServerUrl + "/orders/" + day;
+        String response = restTemplate.getForObject(ordersUrl, String.class);
+        List<Order> orders = objectMapper.readValue(response, new TypeReference<List<Order>>() {});
+
+        // Validate the fetched orders
+        List<Order> validOrdersForTheDay = new ArrayList<>();
+        List<Restaurant> restaurants = restaurants().getBody();
+        for (Order order : orders) {
+            Order validatedOrder = orderValidator.validateOrder(order, restaurants.toArray(new Restaurant[0]));
+            if (validatedOrder.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
+                validOrdersForTheDay.add(validatedOrder);
+            }
+        }
+        return ResponseEntity.ok(validOrdersForTheDay);
+    }
 
 
 
 
 
-    //************************************************************************************************************************
+
+    //***************************************************************************************************************************************************
     /**
      * simple test method to test the service's availability
      *
