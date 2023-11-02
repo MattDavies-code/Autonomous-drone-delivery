@@ -39,13 +39,13 @@ public class LngLatHandler implements LngLatHandling {
     @Override
     public boolean isInRegion(LngLat position, NamedRegion region) {
         LngLat[] vertices = region.vertices();
-        //Ray Casting Algorithm
-        //Casts a ray from the point towards any direction and counting the number of times the ray intersects with the edges of the polygon.
-        //If the number of intersections is odd the point is inside the polygon
+        // Ray Casting Algorithm
+        // Casts a ray from the point towards any direction and counting the number of times the ray intersects with the edges of the polygon.
+        // If the number of intersections is odd the point is inside the polygon
         int numOfIntersections = 0;
         for (int i = 0; i < vertices.length; i++) {
             LngLat vertex1 = vertices[i];
-            //Will account for the edge connecting the last and first vertex
+            // Will account for the edge connecting the last and first vertex
             LngLat vertex2 = vertices[(i + 1) % vertices.length];
 
             // Check if the ray from the point intersects with the edge through the two conditions
@@ -68,7 +68,7 @@ public class LngLatHandler implements LngLatHandling {
      */
     @Override
     public LngLat nextPosition(LngLat startPosition, double angle) {
-        //Calculates the new position based on the move distance
+        // Calculates the new position based on the move distance
         double angleInRadians = Math.toRadians(angle);
         double newLng = startPosition.lng() + (SystemConstants.DRONE_MOVE_DISTANCE * Math.cos(angleInRadians));
         double newLat = startPosition.lat() + (SystemConstants.DRONE_MOVE_DISTANCE * Math.sin(angleInRadians));

@@ -15,41 +15,29 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * a sample order validator which does nothing
+ * Validates the order
+ * Implements order validation interface
  */
 public class OrderValidator implements OrderValidation {
     /**
-     * validate an order and deliver a validated version where the
-     * OrderStatus and OrderValidationCode are set accordingly.
-     *
-     * The order validation code is defined in the enum @link uk.ac.ed.inf.ilp.constant.OrderValidationStatus
-     *
-     * <p>
-     * Fields to validate include (among others - for details please see the OrderValidationStatus):
-     * <p>
-     * number (16 digit numeric)
-     * CVV
-     * expiration date
-     * the menu items selected in the order
-     * the involved restaurants
-     * if the maximum count is exceeded
-     * if the order is valid on the given date for the involved restaurants (opening days)
-     *
      * @param orderToValidate    is the order which needs validation
      * @param definedRestaurants is the vector of defined restaurants with their according menu structure
      * @return the validated order
      */
     @Override
     public Order validateOrder(Order orderToValidate, Restaurant[] definedRestaurants) {
-        //Validate Card Number
+        /**
+         * Validate Card Number
+         */
         String creditCardNumber = orderToValidate.getCreditCardInformation().getCreditCardNumber();
         if (creditCardNumber == null || !(creditCardNumber.matches("\\d{16}")) || !creditCardNumber.matches("\\d+")) {
             orderToValidate.setOrderStatus(OrderStatus.INVALID);
             orderToValidate.setOrderValidationCode(OrderValidationCode.CARD_NUMBER_INVALID);
             return orderToValidate;
         }
-
-        //Validate Expiration Date (number)
+        /**
+         * Validate Card Expiry Date (format)
+         */
         String expiryDate = orderToValidate.getCreditCardInformation().getCreditCardExpiry();
         String[] expiryDateSplit = expiryDate.split("/");
         int month = Integer.parseInt(expiryDateSplit[0]);
@@ -60,7 +48,9 @@ public class OrderValidator implements OrderValidation {
             return orderToValidate;
         }
 
-        //Validate Expiration Date (date)
+        /**
+         * Validate Expiration Date (date)
+         */
         int orderMonth = orderToValidate.getOrderDate().getMonthValue();
         int orderYear = orderToValidate.getOrderDate().getYear()%1000;
         if (year < orderYear || (year == orderYear && month < orderMonth)){
@@ -69,49 +59,59 @@ public class OrderValidator implements OrderValidation {
                 return orderToValidate;
         }
 
-        //Validate CVV
+        /**
+         * Validate CVV
+         */
         if (orderToValidate.getCreditCardInformation().getCvv() == null || !(orderToValidate.getCreditCardInformation().getCvv().matches("\\d{3}")) || !creditCardNumber.matches("\\d+")) {
             orderToValidate.setOrderStatus(OrderStatus.INVALID);
             orderToValidate.setOrderValidationCode(OrderValidationCode.CVV_INVALID);
             return orderToValidate;
         }
 
-        //Validate if there are no pizzas in the order
+        /**
+         * Validate if order has no pizzas
+         */
         if (orderToValidate.getPizzasInOrder().length == 0) {
             orderToValidate.setOrderStatus(OrderStatus.INVALID);
             orderToValidate.setOrderValidationCode(OrderValidationCode.PIZZA_NOT_DEFINED);
             return orderToValidate;
         }
 
-        //Validate Total Correct
-        //The total includes an order charge
+        /**
+         * Validate if total is correct
+         */
+        // The total includes an order charge
         int addedPrice = SystemConstants.ORDER_CHARGE_IN_PENCE;
         for (Pizza pizza : orderToValidate.getPizzasInOrder()) {
             addedPrice += pizza.priceInPence();
         }
-        //Compares price of pizzas added together to total price defined in the pizza
+        // Compares price of pizzas added together to total price defined in the pizza
         if (orderToValidate.getPriceTotalInPence() != addedPrice) {
             orderToValidate.setOrderStatus(OrderStatus.INVALID);
             orderToValidate.setOrderValidationCode(OrderValidationCode.TOTAL_INCORRECT);
             return orderToValidate;
         }
 
-        //Validate Max Pizza Count
+        /**
+         * Validate if order exceeds max pizzas per order
+         */
         if (orderToValidate.getPizzasInOrder().length > SystemConstants.MAX_PIZZAS_PER_ORDER) {
             orderToValidate.setOrderStatus(OrderStatus.INVALID);
             orderToValidate.setOrderValidationCode(OrderValidationCode.MAX_PIZZA_COUNT_EXCEEDED);
             return orderToValidate;
         }
 
-        //Validate Pizza Defined
-        //List of all pizzas from any restaurant
+        /**
+         * Validate if Pizza Defined in Menu
+         */
+        // List of all pizzas from any restaurant
         List<String> allPizza = new ArrayList<>();
         for (Restaurant restaurant : definedRestaurants) {
             for (Pizza pizza : restaurant.menu()) {
                 allPizza.add(pizza.name());
             }
         }
-        //Check if list of all pizzas available contains the pizzas within the order
+        // Check if list of all pizzas available contains the pizzas within the order
         for (Pizza pizza : orderToValidate.getPizzasInOrder()) {
             if (!(allPizza.contains(pizza.name()))) {
                 orderToValidate.setOrderStatus(OrderStatus.INVALID);
@@ -120,8 +120,10 @@ public class OrderValidator implements OrderValidation {
             }
         }
 
-        //Validate Pizza From Multiple Restaurants
-        //Create a list of the restaurants in which the pizzas in the order
+        /**
+         * Validate Pizza From Multiple Restaurants
+         */
+        // Create a list of the restaurants in which the pizzas in the order
         List<String> restaurantNamesOfPizzas = new ArrayList<>();
         for (Pizza pizza : orderToValidate.getPizzasInOrder()) {
             for (Restaurant restaurant : definedRestaurants) {
@@ -131,7 +133,7 @@ public class OrderValidator implements OrderValidation {
                 }
             }
         }
-        //Check if all restaurants in the list are the same
+        // Check if all restaurants in the list are the same
         boolean differentRestaurants = false;
         for (String name : restaurantNamesOfPizzas) {
             if (!(name.equals(restaurantNamesOfPizzas.get(0)))) {
@@ -145,8 +147,10 @@ public class OrderValidator implements OrderValidation {
             return orderToValidate;
         }
 
-        //Validate Restaurant Closed
-        //Can use restaurantNamesOfPizzas as previous validation eliminates multiple types
+        /**
+         * Validate Restaurant Open
+         */
+        // Can use restaurantNamesOfPizzas as previous validation eliminates multiple types
         LocalDate orderDate = orderToValidate.getOrderDate();
         DayOfWeek orderDay = orderDate.getDayOfWeek();
         String restaurantToCheck = restaurantNamesOfPizzas.get(0);

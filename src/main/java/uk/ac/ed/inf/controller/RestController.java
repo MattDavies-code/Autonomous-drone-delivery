@@ -6,20 +6,20 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.ilp.data.Order;
-import uk.ac.ed.inf.ilp.data.Pizza;
 import uk.ac.ed.inf.data.Tuple;
 
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Objects;
 
-//From ILP Rest Service Tutorial
 /**
- * the ILP Tutorial service which provides suppliers, orders and other useful things
+ * Rest Controller
  */
 @RestController
-public class CoreRestController {
+public class RestController {
 
     /**
      * get a buffered reader for a resource
@@ -46,11 +46,36 @@ public class CoreRestController {
      *
      * @return array of orders
      */
-    @GetMapping("/restaurants")
+    @GetMapping("/orders")
     public Order[] orders() {
         return new Gson().fromJson(getBufferedReaderForResource("json/orders.json"), Order[].class);
     }
 
+    /**
+     * returns the orders by date in the system
+     * @param date the date of the order
+     * @return array of orders
+     */
+
+    @GetMapping("/orders/{date}")
+    public Order[] getOrdersForDay(@PathVariable String date) {
+        // Assuming the date is passed in the format "yyyy-MM-dd" (e.g., "2023-09-01")
+        LocalDate specifiedDate = LocalDate.parse(date);
+        Order[] allOrders = new Gson().fromJson(getBufferedReaderForResource("json/orders.json"), Order[].class);
+
+        // Filter orders for the specified day
+        Order[] ordersForDay = Arrays.stream(allOrders)
+                .filter(order -> order.getOrderDate().isEqual(specifiedDate))
+                .toArray(Order[]::new);
+
+        return ordersForDay;
+    }
+
+
+
+
+
+    //************************************************************************************************************************
     /**
      * simple test method to test the service's availability
      *
@@ -61,7 +86,6 @@ public class CoreRestController {
     public String test(@PathVariable(required = false) String input) {
         return String.format("Hello from the ILP-Tutorial-REST-Service. Your provided value was: %s", input == null ? "not provided" : input);
     }
-
     /**
      * a simple alive check
      *
@@ -105,4 +129,5 @@ public class CoreRestController {
         var postAttribute = new Tuple(item1, item2);
         return "You posted: " + postAttribute.toString();
     }
+
 }
