@@ -29,22 +29,28 @@ import uk.ac.ed.inf.OrderValidator;
 @org.springframework.web.bind.annotation.RestController
 public class RestController {
 
+    private String date;
+    private String restServerUrl;
+    //private final String restServerUrl = "https://ilp-rest.azurewebsites.net";
+
+    // Constructor to initialize date and restServerUrl
+    public RestController(String date, String restServerUrl) {
+        this.date = date;
+        this.restServerUrl = restServerUrl;
+    }
+
     // Beware down below??
     @Autowired
     private FlightPathCalculator flightPathCalculator;
 
 
-
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String restServerUrl = "https://ilp-rest.azurewebsites.net";
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final OrderValidator orderValidator = new OrderValidator(); // Create an instance of your OrderValidator class
+    private final OrderValidator orderValidator = new OrderValidator(); // Create an instance of OrderValidator class
 
     public RestController(FlightPathCalculator flightPathCalculator) {
         this.flightPathCalculator = flightPathCalculator;
         //This bit!!!^^^
-
-
     }
 
     /**
@@ -111,9 +117,9 @@ public class RestController {
     }
      */
 
-    @GetMapping("/orders/{day}")
-    public ResponseEntity<List<Order>> getOrdersForDay(@PathVariable String day) throws JsonProcessingException {
-        String ordersUrl = restServerUrl + "/orders/" + day;
+    @GetMapping("/orders")
+    public ResponseEntity<List<Order>> getOrdersForDay() throws JsonProcessingException {
+        String ordersUrl = restServerUrl + "/orders/" + date;
         String response = restTemplate.getForObject(ordersUrl, String.class);
         List<Order> orders = objectMapper.readValue(response, new TypeReference<List<Order>>() {});
 
