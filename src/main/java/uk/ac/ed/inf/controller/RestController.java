@@ -3,30 +3,29 @@ package uk.ac.ed.inf.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ed.inf.flightPath.FlightPathCalculator;
 import uk.ac.ed.inf.ilp.constant.OrderStatus;
+import uk.ac.ed.inf.ilp.data.NamedRegion;
 import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.ilp.data.Order;
-import uk.ac.ed.inf.data.Tuple;
-import uk.ac.ed.inf.OrderValidator;
+import uk.ac.ed.inf.cw1.OrderValidator;
+import uk.ac.ed.inf.ilp.gsonUtils.LocalDateDeserializer;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
 
 /**
  * Rest Controller
  */
 @org.springframework.web.bind.annotation.RestController
-@RequestMapping("/orders")
 public class RestController {
 
     //restServerUrl = "https://ilp-rest.azurewebsites.net";
@@ -40,7 +39,10 @@ public class RestController {
     private final OrderValidator orderValidator = new OrderValidator(); // Create an instance of OrderValidator class
     private final FlightPathCalculator flightPathCalculator = new FlightPathCalculator();
 
-    public void setConfiguration(String date, String restServerUrl){
+    public RestController() throws JsonProcessingException {
+    }
+
+    public void setConfiguration(String date, String restServerUrl) {
         this.date = date;
         this.restServerUrl = restServerUrl;
     }
@@ -48,162 +50,79 @@ public class RestController {
 
     /**
      * returns the orders by date in the system and validates them using OrderValidator
-     * @return array of orders
+     * @return List<Order>
      */
-    @GetMapping
-    public void fetchOrders() throws JsonProcessingException {
+    @GetMapping("/orders")
+    public List<Order> fetchOrders() throws JsonProcessingException {
+        // Create a custom Gson instance with the LocalDateDeserializer
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDate.class, new LocalDateDeserializer())
+                .create();
+
+        // Fetch orders from the REST server
         String ordersUrl = restServerUrl + "/orders/" + date;
         String response = restTemplate.getForObject(ordersUrl, String.class);
-        List<Order> orders = objectMapper.readValue(response, new TypeReference<List<Order>>() {});
+        // Convert the JSON string to an array of Order objects using LocalDateDeserializer
+        Order[] orders = gson.fromJson(response, Order[].class);
 
         // Validate the fetched orders
         List<Order> validOrdersForTheDay = new ArrayList<>();
-        List<Restaurant> restaurants = getRestaurantsFromRestServer();
+        List<Restaurant> restaurants = fetchRestaurants();
         for (Order order : orders) {
             Order validatedOrder = orderValidator.validateOrder(order, restaurants.toArray(new Restaurant[0]));
             if (validatedOrder.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
                 validOrdersForTheDay.add(validatedOrder);
+            /*
+              else to be implemented here
+              non valid orders to still be in output files!!
+              */
             }
         }
-        // Now, you can use validOrdersForTheDay in FlightPathCalculator
-        flightPathCalculator.calculateFlightPaths(validOrdersForTheDay);
+        return validOrdersForTheDay;
     }
 
-    private List<Restaurant> getRestaurantsFromRestServer() throws JsonProcessingException {
+    /**
+     * returns the restaurants from the Rest Server
+     * @return List<Restaurant>
+     */
+    public List<Restaurant> fetchRestaurants() throws JsonProcessingException {
         String restaurantsUrl = restServerUrl + "/restaurants";
         String response = restTemplate.getForObject(restaurantsUrl, String.class);
-        return objectMapper.readValue(response, new TypeReference<List<Restaurant>>() {});
+
+        List<Restaurant> definedRestaurants = objectMapper.readValue(response, new TypeReference<>() {});
+        return definedRestaurants;
     }
 
 
-    /*
-     * get a buffered reader for a resource
-     a
-     * @param jsonResource the JSON resource this reader is required for
-     * @return the buffered reader
-
-    private java.io.BufferedReader getBufferedReaderForResource(String jsonResource) {
-        return new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(jsonResource))));
-    }
-    */
-
-    /*
-     * returns the restaurants in the system
-     * @return array of restaurants
-
-    @GetMapping("/restaurants")
-    public ResponseEntity<List<Restaurant>> restaurants() throws JsonProcessingException {
-        String restaurantsUrl = restServerUrl + "/restaurants";
-        String response = restTemplate.getForObject(restaurantsUrl, String.class);
-        List<Restaurant> restaurants = objectMapper.readValue(response, new TypeReference<List<Restaurant>>() {});
-        return ResponseEntity.ok(restaurants);
-    }
-    */
-
-
-
-    /*
-     * returns the restaurants in the system
-     *
-     * @return array of restaurants
-
-    @GetMapping("/restaurants")
-    public Restaurant[] restaurants() {
-        //return new Gson().fromJson(getBufferedReaderForResource("json/restaurants.json"), Restaurant[].class);
-    }
-    */
 
     /**
-     * returns the orders in the system
-     *
-     * @return array of orders
-
-    @GetMapping("/orders")
-    public Order[] orders() {
-        return new Gson().fromJson(getBufferedReaderForResource("json/orders.json"), Order[].class);
-    }
-    */
-
-    /**
-     * returns the orders by date in the system
-     * @param date the date of the order
-     * @return array of orders
-
-    @GetMapping("/orders/{date}")
-    public Order[] getOrdersForDay(@PathVariable String date) {
-        // Assuming the date is passed in the format "yyyy-MM-dd" (e.g., "2023-09-01")
-        LocalDate specifiedDate = LocalDate.parse(date);
-        Order[] allOrders = new Gson().fromJson(getBufferedReaderForResource("json/orders.json"), Order[].class);
-
-        // Filter orders for the specified day
-        Order[] ordersForDay = Arrays.stream(allOrders)
-                .filter(order -> order.getOrderDate().isEqual(specifiedDate))
-                .toArray(Order[]::new);
-
-        return ordersForDay;
-    }
+     * returns the no-fly zones from the Rest Server
+     * @return List<NamedRegion>
      */
+    @GetMapping("/noFlyZones")
+    public List<NamedRegion> fetchNoFlyZones() throws JsonProcessingException {
+        // Fetch noFlyZones from the REST server
+        String noFlyZonesUrl = restServerUrl + "/noFlyZones";
+        String response = restTemplate.getForObject(noFlyZonesUrl, String.class);
 
+        // Deserialize the JSON response into a list of no-fly zones
+        List<NamedRegion> noFlyZones = objectMapper.readValue(response, new TypeReference<>() {});
+        return noFlyZones;
 
-
-
-
-
-
-
-    //***************************************************************************************************************************************************
-    /**
-     * simple test method to test the service's availability
-     *
-     * @param input an optional input which will be echoed
-     * @return the echo
-     */
-    @GetMapping(value = {"/testPath/{input}", "/testPath"})
-    public String test(@PathVariable(required = false) String input) {
-        return String.format("Hello from the ILP-Tutorial-REST-Service. Your provided value was: %s", input == null ? "not provided" : input);
-    }
-    /**
-     * a simple alive check
-     *
-     * @return true (always)
-     */
-    @GetMapping(value = {"/isAlive"})
-    public boolean isAlive() {
-        return true;
-    }
-
-
-    /**
-     * GET with HTML result
-     * @return
-     */
-    @RequestMapping(value = "/test", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
-    @ResponseBody
-    public String testHtml() {
-        return "<html>\n" + "<header><title>ILP Tutorial REST Server</title></header>\n" +
-                "<body>\n<h1>" + "Hello from the ILP Tutorial REST Server\n" + "</h1></body>\n" + "</html>";
     }
 
     /**
-     * POST with a JSON data structure in the request body
-     * @param postAttribute
-     * @return
+     * returns the central area from the Rest Server
+     * @return NamedRegion
      */
-    @PostMapping(value = "/testPostBody",  consumes = {"*/*"})
-    public String testPost(@RequestBody Tuple postAttribute) {
-        return "You posted: " + postAttribute.toString();
-    }
+    @GetMapping("/centralArea")
+    public NamedRegion fetchCentralArea() throws JsonProcessingException {
+        // Fetch the central area from the REST server
+        String centralAreaUrl = restServerUrl + "/centralArea";
+        String response = restTemplate.getForObject(centralAreaUrl, String.class);
 
-    /**
-     * POST with request parameters
-     * @param item1
-     * @param item2
-     * @return
-     */
-    @PostMapping("/testPostPath")
-    public String testPost(@RequestParam("item1") String item1, @RequestParam("item2") String item2) {
-        var postAttribute = new Tuple(item1, item2);
-        return "You posted: " + postAttribute.toString();
+        // Deserialize the JSON response into a CentralArea object
+        NamedRegion centralArea = objectMapper.readValue(response, new TypeReference<>() {});
+        return centralArea;
     }
-
 }

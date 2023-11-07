@@ -66,9 +66,9 @@ public class MainSpringBoot {
 
 			// Pass date and restServerUrl to the controller
 			restController.setConfiguration(date, restServerUrl);
-			restController.fetchOrders();
 		};
 	}
+	//run flightpath calculator here
 }
 
 
