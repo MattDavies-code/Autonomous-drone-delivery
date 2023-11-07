@@ -3,17 +3,17 @@ package uk.ac.ed.inf.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
 import uk.ac.ed.inf.flightPath.FlightPathCalculator;
 import uk.ac.ed.inf.ilp.constant.OrderStatus;
 import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.data.Tuple;
-
+import uk.ac.ed.inf.OrderValidator;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -21,47 +21,86 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import uk.ac.ed.inf.OrderValidator;
 
 /**
  * Rest Controller
  */
 @org.springframework.web.bind.annotation.RestController
+@RequestMapping("/orders")
 public class RestController {
 
-    private String date;
+    //restServerUrl = "https://ilp-rest.azurewebsites.net";
+    //date = "2023-11-15";
+
     private String restServerUrl;
-    //private final String restServerUrl = "https://ilp-rest.azurewebsites.net";
-
-    // Constructor to initialize date and restServerUrl
-    public RestController(String date, String restServerUrl) {
-        this.date = date;
-        this.restServerUrl = restServerUrl;
-    }
-
-    // Beware down below??
-    @Autowired
-    private FlightPathCalculator flightPathCalculator;
-
+    private String date;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final OrderValidator orderValidator = new OrderValidator(); // Create an instance of OrderValidator class
+    private final FlightPathCalculator flightPathCalculator = new FlightPathCalculator();
 
-    public RestController(FlightPathCalculator flightPathCalculator) {
-        this.flightPathCalculator = flightPathCalculator;
-        //This bit!!!^^^
+    public void setConfiguration(String date, String restServerUrl){
+        this.date = date;
+        this.restServerUrl = restServerUrl;
     }
 
+
     /**
+     * returns the orders by date in the system and validates them using OrderValidator
+     * @return array of orders
+     */
+    @GetMapping
+    public void fetchOrders() throws JsonProcessingException {
+        String ordersUrl = restServerUrl + "/orders/" + date;
+        String response = restTemplate.getForObject(ordersUrl, String.class);
+        List<Order> orders = objectMapper.readValue(response, new TypeReference<List<Order>>() {});
+
+        // Validate the fetched orders
+        List<Order> validOrdersForTheDay = new ArrayList<>();
+        List<Restaurant> restaurants = getRestaurantsFromRestServer();
+        for (Order order : orders) {
+            Order validatedOrder = orderValidator.validateOrder(order, restaurants.toArray(new Restaurant[0]));
+            if (validatedOrder.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
+                validOrdersForTheDay.add(validatedOrder);
+            }
+        }
+        // Now, you can use validOrdersForTheDay in FlightPathCalculator
+        flightPathCalculator.calculateFlightPaths(validOrdersForTheDay);
+    }
+
+    private List<Restaurant> getRestaurantsFromRestServer() throws JsonProcessingException {
+        String restaurantsUrl = restServerUrl + "/restaurants";
+        String response = restTemplate.getForObject(restaurantsUrl, String.class);
+        return objectMapper.readValue(response, new TypeReference<List<Restaurant>>() {});
+    }
+
+
+    /*
      * get a buffered reader for a resource
      a
      * @param jsonResource the JSON resource this reader is required for
      * @return the buffered reader
-     */
+
     private java.io.BufferedReader getBufferedReaderForResource(String jsonResource) {
         return new BufferedReader(new InputStreamReader(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(jsonResource))));
     }
+    */
+
+    /*
+     * returns the restaurants in the system
+     * @return array of restaurants
+
+    @GetMapping("/restaurants")
+    public ResponseEntity<List<Restaurant>> restaurants() throws JsonProcessingException {
+        String restaurantsUrl = restServerUrl + "/restaurants";
+        String response = restTemplate.getForObject(restaurantsUrl, String.class);
+        List<Restaurant> restaurants = objectMapper.readValue(response, new TypeReference<List<Restaurant>>() {});
+        return ResponseEntity.ok(restaurants);
+    }
+    */
+
+
 
     /*
      * returns the restaurants in the system
@@ -73,18 +112,6 @@ public class RestController {
         //return new Gson().fromJson(getBufferedReaderForResource("json/restaurants.json"), Restaurant[].class);
     }
     */
-    /**
-     * returns the restaurants in the system
-     *
-     * @return array of restaurants
-     */
-    @GetMapping("/restaurants")
-    public ResponseEntity<List<Restaurant>> restaurants() throws JsonProcessingException {
-        String restaurantsUrl = restServerUrl + "/restaurants";
-        String response = restTemplate.getForObject(restaurantsUrl, String.class);
-        List<Restaurant> restaurants = objectMapper.readValue(response, new TypeReference<List<Restaurant>>() {});
-        return ResponseEntity.ok(restaurants);
-    }
 
     /**
      * returns the orders in the system
@@ -117,23 +144,7 @@ public class RestController {
     }
      */
 
-    @GetMapping("/orders")
-    public ResponseEntity<List<Order>> getOrdersForDay() throws JsonProcessingException {
-        String ordersUrl = restServerUrl + "/orders/" + date;
-        String response = restTemplate.getForObject(ordersUrl, String.class);
-        List<Order> orders = objectMapper.readValue(response, new TypeReference<List<Order>>() {});
 
-        // Validate the fetched orders
-        List<Order> validOrdersForTheDay = new ArrayList<>();
-        List<Restaurant> restaurants = restaurants().getBody();
-        for (Order order : orders) {
-            Order validatedOrder = orderValidator.validateOrder(order, restaurants.toArray(new Restaurant[0]));
-            if (validatedOrder.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
-                validOrdersForTheDay.add(validatedOrder);
-            }
-        }
-        return ResponseEntity.ok(validOrdersForTheDay);
-    }
 
 
 

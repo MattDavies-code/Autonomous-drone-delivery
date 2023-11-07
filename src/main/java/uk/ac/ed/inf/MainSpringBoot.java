@@ -1,7 +1,10 @@
 package uk.ac.ed.inf;
 
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import uk.ac.ed.inf.controller.RestController;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,5 +58,22 @@ public class MainSpringBoot {
 			return false; // URL is not valid
 		}
 	}
+	@Bean
+	public CommandLineRunner configureRest(RestController restController) {
+		return args -> {
+			String date = args[0];
+			String restServerUrl = args[1];
+
+			// Pass date and restServerUrl to the controller
+			restController.setConfiguration(date, restServerUrl);
+			restController.fetchOrders();
+		};
+	}
 }
+
+
+
+
+
+
 
