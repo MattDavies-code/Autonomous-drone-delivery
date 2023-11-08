@@ -36,8 +36,7 @@ public class RestController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final OrderValidator orderValidator = new OrderValidator(); // Create an instance of OrderValidator class
-    private final FlightPathCalculator flightPathCalculator = new FlightPathCalculator();
+    private final OrderValidator orderValidator = new OrderValidator();
 
     public RestController() throws JsonProcessingException {
     }
