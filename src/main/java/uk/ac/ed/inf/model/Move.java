@@ -3,7 +3,7 @@ package uk.ac.ed.inf.model;
 import uk.ac.ed.inf.ilp.data.LngLat;
 
 /**
- * Model for a single move
+ * Model for a single move from one node to another
  * Used for recording the drone flight path move by move to be used in flightpath json file
  */
 public class Move {

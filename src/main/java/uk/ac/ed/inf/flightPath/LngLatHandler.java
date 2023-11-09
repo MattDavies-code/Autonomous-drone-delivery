@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.cw1;
+package uk.ac.ed.inf.flightPath;
 
 import uk.ac.ed.inf.ilp.constant.SystemConstants;
 import uk.ac.ed.inf.ilp.data.LngLat;
