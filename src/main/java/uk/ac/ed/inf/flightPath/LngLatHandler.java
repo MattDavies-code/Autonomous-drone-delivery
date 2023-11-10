@@ -68,7 +68,6 @@ public class LngLatHandler implements LngLatHandling {
      */
     @Override
     public LngLat nextPosition(LngLat startPosition, double angle) {
-        // Calculates the new position based on the move distance
         double angleInRadians = Math.toRadians(angle);
         double newLng = startPosition.lng() + (SystemConstants.DRONE_MOVE_DISTANCE * Math.cos(angleInRadians));
         double newLat = startPosition.lat() + (SystemConstants.DRONE_MOVE_DISTANCE * Math.sin(angleInRadians));

@@ -57,27 +57,27 @@ public class Main {
 		// 2. Validate the orders
 		OrderValidator orderValidator = new OrderValidator();
 
-		ArrayList<Order> validOrders = new ArrayList<Order>();
-		ArrayList<Order> invalidOrders = new ArrayList<Order>();
+//		ArrayList<Order> validOrders = new ArrayList<Order>();
+//		ArrayList<Order> invalidOrders = new ArrayList<Order>();
 		for (Order order : orders) {
-			Order currentOrder = orderValidator.validateOrder(order, restaurants);
-			if (currentOrder.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
-				validOrders.add(currentOrder);
-			} else if (currentOrder.getOrderStatus() == OrderStatus.INVALID){
-				invalidOrders.add(currentOrder);
-			}
+			orderValidator.validateOrder(order, restaurants);
+//			if (currentOrder.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
+//				validOrders.add(currentOrder);
+//			} else if (currentOrder.getOrderStatus() == OrderStatus.INVALID){
+//				invalidOrders.add(currentOrder);
+//			}
 		}
-		// Convert validOrders and invalidOrders to Order[]
-		Order[] validOrders1 = validOrders.toArray(new Order[validOrders.size()]);
-		Order[] invalidOrders1 = invalidOrders.toArray(new Order[invalidOrders.size()]);
+//		// Convert validOrders and invalidOrders to Order[]
+//		Order[] validOrders1 = validOrders.toArray(new Order[validOrders.size()]);
+//		Order[] invalidOrders1 = invalidOrders.toArray(new Order[invalidOrders.size()]);
 
 		// 3. Calculate the flightpaths for all valid orders in the exact sequence you received them
-		FlightPathCalculator flightPathCalculator = new FlightPathCalculator(validOrders1, restaurants, centralArea, noFlyZones);
+		FlightPathCalculator flightPathCalculator = new FlightPathCalculator(orders, restaurants, centralArea, noFlyZones);
 		HashMap<String, ArrayList<Move>> flightPaths = flightPathCalculator.flightPathList();
 
 		// 4. Write the 3 result files in a folder resultfiles (create if not exists)
 		CreateFiles createFiles = new CreateFiles();
-		createFiles.writeDeliveries(date, validOrders1, invalidOrders1);
+		createFiles.writeDeliveries(date, orders);
 		createFiles.writeFlighpath(date, flightPaths);
 		createFiles.writeDrone(date, flightPaths);
 	}

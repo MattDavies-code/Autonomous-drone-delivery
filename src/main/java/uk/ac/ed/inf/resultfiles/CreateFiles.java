@@ -27,7 +27,7 @@ public class CreateFiles {
     /**
      * The first file (deliveries-YYYY-MM-DD.json) records both the deliveries and non-deliveries made by the drone
      */
-    public void writeDeliveries(String date, Order[] validOrders1, Order[] invalidOrders1) {
+    public void writeDeliveries(String date, Order[] orders) {
     }
     /**
      * The second file (flightpath-YYYY-MM-DD.json) records the flightpath of the drone move-by-move

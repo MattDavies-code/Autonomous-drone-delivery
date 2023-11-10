@@ -11,7 +11,7 @@ public class Move {
     String orderNo;
     double fromLongitude;
     double fromLatitude;
-    int angle;
+    double angle;
     double toLongitude;
     double toLatitude;
 
