@@ -1,6 +1,7 @@
 package uk.ac.ed.inf.flightPath;
 
 import uk.ac.ed.inf.ilp.constant.OrderStatus;
+import uk.ac.ed.inf.ilp.constant.SystemConstants;
 import uk.ac.ed.inf.ilp.data.LngLat;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 import uk.ac.ed.inf.ilp.data.Order;
@@ -18,7 +19,7 @@ public class FlightPathCalculator {
 
     // Constants
     private final LngLat appletonTower = new LngLat(-3.186874, 55.944494);
-    private final Double Hover = 999.0;
+    //private final Double Hover = 999.0;
 
     private final NamedRegion[] noFlyZones;
     private final NamedRegion centralArea;
@@ -51,12 +52,10 @@ public class FlightPathCalculator {
                     if (flightPathToRestaurant.containsKey(currentRestaurant)) {
                         ArrayList<Move> flightPath = flightPathToRestaurant.get(currentRestaurant);
 
-                        // Add flightpath to restaurant to flightpath list
+                        // Add the flightpath and reverse flightpath to the flightpaths list
                         flightPaths.put(order.getOrderNo(), flightPath);
-                        // Reverse and add the flightpath
-                        ArrayList<Move> reverseFlightPath = new ArrayList<>(flightPath);
-                        Collections.reverse(reverseFlightPath);
-                        flightPaths.put(order.getOrderNo(), reverseFlightPath);
+                        Collections.reverse(flightPath);
+                        flightPaths.put(order.getOrderNo(), flightPath);
                     } else {
                         // Get start and end position for the order
                         LngLat startPosition = appletonTower;
@@ -67,13 +66,13 @@ public class FlightPathCalculator {
 
                         // Add the flightpath and reverse flightpath to the flightpaths list
                         flightPaths.put(order.getOrderNo(), flightPath);
-                        ArrayList<Move> reverseFlightPath = new ArrayList<>(flightPath);
-                        Collections.reverse(reverseFlightPath);
-                        flightPaths.put(order.getOrderNo(), reverseFlightPath);
+                        Collections.reverse(flightPath);
+                        flightPaths.put(order.getOrderNo(), flightPath);
 
                         // Add flightpath to restaurant to flightpath list
                         flightPathToRestaurant.put(currentRestaurant, flightPath);
                     }
+                    order.setOrderStatus(OrderStatus.DELIVERED);
                 } catch (Exception e) {
                     System.err.println(e);
                 }
@@ -94,10 +93,6 @@ public class FlightPathCalculator {
         // Must spend one move hovering (with angle 999) when closeTo(endPosition)
         // Once back inside the central area the drone must not leave again until it has delivered the pizzas to the start position (appleton Tower)
         // The drone must not fly over any no-fly zones
-        // utilise isCloseTo() method in LngLatHandler
-        // utilise distanceTo() method in LngLatHandler
-        // utilise isInRegion() method in LngLatHandler
-        // utilise nextPosition() method in LngLatHandler
         // can move in 16 directions, angle is in degrees
         // hover is 999
         // Initialize open and closed sets
@@ -126,12 +121,17 @@ public class FlightPathCalculator {
             closedSet.add(current);
 
             // If the goal is reached, reconstruct the path and return it
-            if (current.getPosition().equals(goalNode.getPosition())) {
-                return reconstructPath(current);
+            if (lngLatHandler.isCloseTo(current.getPosition(), goalNode.getPosition())) {
+                ArrayList<Move> path = reconstructPath(current, order);
+                // Add a hover move at the end of the path
+                LngLat lastPosition = current.getPosition();
+                path.add(new Move(order.getOrderNo(), lastPosition.lng(), lastPosition.lat(), 999, lastPosition.lng(), lastPosition.lat()));
+
+                return path;
             }
 
             // Generate successors (neighbors) of the current node
-            List<Node> successors = generateSuccessors(current, goalNode, order);
+            List<Node> successors = generateSuccessors(current, goalNode);
 
             for (Node neighbor : successors) {
                 // Skip if the neighbor is in the closed set
@@ -163,12 +163,13 @@ public class FlightPathCalculator {
 
     /**
      * Generate successors (neighbors) of the current node
+     * g = costFromStart = cost from start to current node
+     * h = heuristicCost = heuristic cost from current node to goal node
      * @param current   the current node
      * @param goalNode  the goal node
-     * @param order     the order being delivered
      * @return a list of successor nodes
      */
-    private List<Node> generateSuccessors(Node current, Node goalNode, Order order) {
+    private List<Node> generateSuccessors(Node current, Node goalNode) {
 
         List<Node> successors = new ArrayList<>();
         LngLat currentPos = current.getPosition();
@@ -178,51 +179,40 @@ public class FlightPathCalculator {
 
         for (double angle : angles) {
             LngLat nextPos = lngLatHandler.nextPosition(currentPos, angle);
-            double costFromStart = current.getCostFromStart() + lngLatHandler.distanceTo(current.getPosition(), nextPos);
+
+//            Node successor = new Node(nextPos, 0, 0);
+//            // Skip successor if visited before
+//            if (visited.contains(successor)) {
+//                continue;
+//            }
+
+            // Check if the next position is inside any no-fly zones
+            boolean isInsideNoFlyZone = false;
+            for (NamedRegion noFlyZone : noFlyZones) {
+                if (lngLatHandler.isInRegion(nextPos, noFlyZone)) {
+                    isInsideNoFlyZone = true;
+                    break;
+                }
+            }
+            // Skip successor if next position is inside a no-fly zone
+            if (isInsideNoFlyZone) {
+                continue;
+            }
+
+            // Skip successor if current position is in central area and next position out of central area
+            //if (lngLatHandler.isInRegion(currentPos, centralArea) && !lngLatHandler.isInRegion(nextPos, centralArea)) {
+            //    continue;
+            //}
+
+            double costFromStart = current.getCostFromStart() + SystemConstants.DRONE_MOVE_DISTANCE;
             double heuristicCost = lngLatHandler.distanceTo(nextPos, goalNode.getPosition());
 
-            // Check additional rules
-            if (shouldHover(currentPos, nextPos, goalNode.getPosition(), order)) {
-                // Add a move with angle 999 (hovering)
-                successors.add(new Node(nextPos, costFromStart + 1, heuristicCost));
-            } else {
-                successors.add(new Node(nextPos, costFromStart, heuristicCost));
-            }
+            successors.add(new Node(nextPos, costFromStart, heuristicCost));
+
         }
         return successors;
     }
 
-    /**
-     * Check if the drone should hover at the current position
-     *
-     * @param currentPos the current position of the drone
-     * @param nextPos    the next position the drone is considering
-     * @param goalPos    the goal position of the drone
-     * @param order      the order being delivered
-     * @return true if the drone should hover, false otherwise
-     */
-    private boolean shouldHover(LngLat currentPos, LngLat nextPos, LngLat goalPos, Order order) {
-        // Must spend one move hovering (with angle 999) when closeTo(restaurantLocation)
-        if (lngLatHandler.isCloseTo(nextPos, getRestaurant(order).location())) {
-            return true;
-        }
-        // Must spend one move hovering (with angle 999) when closeTo(endPosition)
-        if (lngLatHandler.isCloseTo(nextPos, goalPos)) {
-            return true;
-        }
-        // Once back inside the central area, the drone must not leave again until it has delivered the pizzas to the start position (appleton Tower)
-        if (!lngLatHandler.isInRegion(nextPos, centralArea) && lngLatHandler.isInRegion(currentPos, centralArea)) {
-            // Drone is leaving the central area
-            return true;
-        }
-        // The drone must not fly over any no-fly zones
-        for (NamedRegion noFlyZone : noFlyZones) {
-            if (lngLatHandler.isInRegion(nextPos, noFlyZone)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Get the node with the lowest total cost from the set
@@ -237,7 +227,49 @@ public class FlightPathCalculator {
     }
 
     /**
-     * Gets the restaurants location for the order
+     * Reconstruct the path from the goal node to the start node
+     *
+     * @param goalNode the goal node
+     * @return the reconstructed path as a list of moves
+     */
+    private ArrayList<Move> reconstructPath(Node goalNode, Order order) {
+        ArrayList<Move> path = new ArrayList<>();
+        Node current = goalNode;
+
+        while (current.getParent() != null) {
+            // Construct a Move object from the current node and its parent
+            LngLat from = current.getParent().getPosition();
+            LngLat to = current.getPosition();
+            int angle = calculateAngle(from, to);
+
+            // Create a Move object and add it to the path
+            path.add(new Move(order.getOrderNo(), from.lng(), from.lat(), angle, to.lng(), to.lat()));
+
+            // Move to the parent node
+            current = current.getParent();
+        }
+
+        // Reverse the path to get the correct order
+        Collections.reverse(path);
+        return path;
+    }
+
+    /**
+     * Calculate the angle between two positions
+     *
+     * @param from the starting position
+     * @param to   the ending position
+     * @return the angle in degrees
+     */
+    private int calculateAngle(LngLat from, LngLat to) {
+        // Calculate the angle based on the difference in longitude and latitude
+        double deltaX = to.lng() - from.lng();
+        double deltaY = to.lat() - from.lat();
+        return (int) Math.toDegrees(Math.atan2(deltaY, deltaX));
+    }
+
+    /**
+     * Gets the restaurants' location for the order
      * @param order the current order being delivered
      * @return restaurantLocation
      */

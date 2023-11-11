@@ -32,6 +32,30 @@ public class Move {
         this.angle = angle;
         this.toLongitude = toLongitude;
         this.toLatitude = toLatitude;
+    }
 
+    //** Getter methods **//
+    public String getOrderNo() {
+        return orderNo;
+    }
+
+    public double getFromLng() {
+        return fromLongitude;
+    }
+
+    public double getFromLat() {
+        return fromLatitude;
+    }
+
+    public double getAngle() {
+        return angle;
+    }
+
+    public double getToLng() {
+        return toLongitude;
+    }
+
+    public double getToLat() {
+        return toLatitude;
     }
 }

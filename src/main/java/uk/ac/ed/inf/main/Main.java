@@ -1,13 +1,8 @@
 package uk.ac.ed.inf.main;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import uk.ac.ed.inf.controller.RestController;
 import uk.ac.ed.inf.flightPath.FlightPathCalculator;
-import uk.ac.ed.inf.ilp.constant.OrderStatus;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.ilp.data.Restaurant;
@@ -27,16 +22,13 @@ public class Main {
 			System.exit(1);
 		}
 
-		ArgumentValidator argumentValidator = new ArgumentValidator();
-
 		// Take date and REST URL, and validate them
 		String date = args[0];
 		String restServerUrl = args[1];
+		ArgumentValidator argumentValidator = new ArgumentValidator();
 
 		try {
-			if (argumentValidator.isValidDate(date) && argumentValidator.isValidUrl(restServerUrl)) {
-				SpringApplication.run(Main.class, date, restServerUrl);
-			} else {
+			if (!argumentValidator.isValidDate(date) || !argumentValidator.isValidUrl(restServerUrl)) {
 				System.err.println("Invalid date or URL provided.");
 				System.exit(1);
 			}
@@ -56,20 +48,9 @@ public class Main {
 
 		// 2. Validate the orders
 		OrderValidator orderValidator = new OrderValidator();
-
-//		ArrayList<Order> validOrders = new ArrayList<Order>();
-//		ArrayList<Order> invalidOrders = new ArrayList<Order>();
 		for (Order order : orders) {
 			orderValidator.validateOrder(order, restaurants);
-//			if (currentOrder.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
-//				validOrders.add(currentOrder);
-//			} else if (currentOrder.getOrderStatus() == OrderStatus.INVALID){
-//				invalidOrders.add(currentOrder);
-//			}
 		}
-//		// Convert validOrders and invalidOrders to Order[]
-//		Order[] validOrders1 = validOrders.toArray(new Order[validOrders.size()]);
-//		Order[] invalidOrders1 = invalidOrders.toArray(new Order[invalidOrders.size()]);
 
 		// 3. Calculate the flightpaths for all valid orders in the exact sequence you received them
 		FlightPathCalculator flightPathCalculator = new FlightPathCalculator(orders, restaurants, centralArea, noFlyZones);
@@ -78,7 +59,7 @@ public class Main {
 		// 4. Write the 3 result files in a folder resultfiles (create if not exists)
 		CreateFiles createFiles = new CreateFiles();
 		createFiles.writeDeliveries(date, orders);
-		createFiles.writeFlighpath(date, flightPaths);
+		createFiles.writeFlightpath(date, flightPaths);
 		createFiles.writeDrone(date, flightPaths);
 	}
 }
