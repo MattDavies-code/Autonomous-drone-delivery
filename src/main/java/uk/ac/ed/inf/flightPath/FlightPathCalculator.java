@@ -49,6 +49,7 @@ public class FlightPathCalculator {
                 try {
                     // Check if flightpath to restaurant already exists
                     Restaurant currentRestaurant = getRestaurant(order);
+                    //System.out.println("Current Restaurant: " + currentRestaurant.name());
                     if (flightPathToRestaurant.containsKey(currentRestaurant)) {
                         ArrayList<Move> flightPath = flightPathToRestaurant.get(currentRestaurant);
 
@@ -56,13 +57,13 @@ public class FlightPathCalculator {
                         flightPaths.put(order.getOrderNo(), flightPath);
                         Collections.reverse(flightPath);
                         flightPaths.put(order.getOrderNo(), flightPath);
+                        //System.out.println("Flightpath to restaurant already exists");
                     } else {
-                        // Get start and end position for the order
-                        LngLat startPosition = appletonTower;
+                        // Get end position for the order
                         LngLat endPosition = currentRestaurant.location();
 
                         // Calculate the flight path for a single order
-                        ArrayList<Move> flightPath = calculateFlightPath(order, startPosition, endPosition);
+                        ArrayList<Move> flightPath = calculateFlightPath(order, appletonTower, endPosition);
 
                         // Add the flightpath and reverse flightpath to the flightpaths list
                         flightPaths.put(order.getOrderNo(), flightPath);
@@ -71,6 +72,8 @@ public class FlightPathCalculator {
 
                         // Add flightpath to restaurant to flightpath list
                         flightPathToRestaurant.put(currentRestaurant, flightPath);
+                        System.out.println("Order Complete");
+
                     }
                     order.setOrderStatus(OrderStatus.DELIVERED);
                 } catch (Exception e) {
@@ -99,7 +102,6 @@ public class FlightPathCalculator {
         Set<Node> openSet = new HashSet<>();
         Set<Node> closedSet = new HashSet<>();
 
-
         // Heuristic function is Euclidean distance as this is admissible
         // Create the start and goal nodes
         Node startNode = new Node(start, 0, lngLatHandler.distanceTo(start, end));
@@ -111,8 +113,11 @@ public class FlightPathCalculator {
         // Initialize the start node as the current node
         Node current = startNode;
 
+        // Set max depth
+        int maxDepth = 50;
+        int depth = 0;
         // A* algorithm
-        while (!openSet.isEmpty()) {
+        while (!openSet.isEmpty() && depth < maxDepth) {
             // Get the node with the lowest total cost from the open set
             current = getLowestCostNode(openSet);
 
@@ -122,6 +127,7 @@ public class FlightPathCalculator {
 
             // If the goal is reached, reconstruct the path and return it
             if (lngLatHandler.isCloseTo(current.getPosition(), goalNode.getPosition())) {
+                System.out.println("Goal reached");
                 ArrayList<Move> path = reconstructPath(current, order);
                 // Add a hover move at the end of the path
                 LngLat lastPosition = current.getPosition();
@@ -131,7 +137,7 @@ public class FlightPathCalculator {
             }
 
             // Generate successors (neighbors) of the current node
-            List<Node> successors = generateSuccessors(current, goalNode);
+            List<Node> successors = generateSuccessors(current, goalNode, closedSet, openSet);
 
             for (Node neighbor : successors) {
                 // Skip if the neighbor is in the closed set
@@ -155,6 +161,7 @@ public class FlightPathCalculator {
                     openSet.add(neighbor);
                 }
             }
+            depth++;
         }
 
         // If open set is empty and goal is not reached, return an empty path
@@ -169,22 +176,24 @@ public class FlightPathCalculator {
      * @param goalNode  the goal node
      * @return a list of successor nodes
      */
-    private List<Node> generateSuccessors(Node current, Node goalNode) {
+    private List<Node> generateSuccessors(Node current, Node goalNode, Set<Node> closedSet, Set<Node> openSet) {
 
         List<Node> successors = new ArrayList<>();
         LngLat currentPos = current.getPosition();
 
         // Adjust these angles based on your drone's movement capabilities
-        double[] angles = {0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180, 202.5, 225, 247.5, 270, 292.5, 315, 337.5};
+        //double[] angles = {0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180, 202.5, 225, 247.5, 270, 292.5, 315, 337.5};
+        double[] angles = {0, 45, 90, 135, 180, 225, 270, 315};
+        //int successorsGenerated
 
         for (double angle : angles) {
             LngLat nextPos = lngLatHandler.nextPosition(currentPos, angle);
 
-//            Node successor = new Node(nextPos, 0, 0);
-//            // Skip successor if visited before
-//            if (visited.contains(successor)) {
-//                continue;
-//            }
+            Node successor = new Node(nextPos, 0, 0);
+            // Skip successor if visited before
+            if (closedSet.contains(successor) || openSet.contains(successor)) {
+                continue;
+            }
 
             // Check if the next position is inside any no-fly zones
             boolean isInsideNoFlyZone = false;
@@ -233,6 +242,7 @@ public class FlightPathCalculator {
      * @return the reconstructed path as a list of moves
      */
     private ArrayList<Move> reconstructPath(Node goalNode, Order order) {
+        System.out.println("Reconstructing path");
         ArrayList<Move> path = new ArrayList<>();
         Node current = goalNode;
 
@@ -274,7 +284,7 @@ public class FlightPathCalculator {
      * @return restaurantLocation
      */
     private Restaurant getRestaurant(Order order) {
-        Restaurant restaurant = null;
+        Restaurant restaurant;
         for (Restaurant currentRestaurant : restaurants) {
             // Check if the restaurant has the first pizza in the order
             if (Arrays.asList(currentRestaurant.menu()).contains(order.getPizzasInOrder()[0])) {

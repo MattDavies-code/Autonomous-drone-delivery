@@ -16,6 +16,7 @@ import java.util.HashMap;
 
 public class Main {
 	public static void main(String[] args) throws JsonProcessingException {
+		System.out.println("Starting System...");
 		// Check if the correct number of command-line arguments is provided
 		if (args.length != 2) {
 			System.err.println("Usage: java -jar PizzaDronz-1.0-SNAPSHOT.jar <date> <URL>");
@@ -40,26 +41,33 @@ public class Main {
 		// Pass date and restServerUrl to the controller
 		RestController restController = new RestController(date, restServerUrl);
 
+		System.out.println("Fetching orders...");
 		// 1. Read orders for the specified day (and only the day) and restaurants plus other relevant data from the REST-Server
 		Order[] orders = restController.fetchOrders();
 		Restaurant[] restaurants = restController.fetchRestaurants();
 		NamedRegion centralArea = restController.fetchCentralArea();
 		NamedRegion[] noFlyZones = restController.fetchNoFlyZones();
 
+		System.out.println("Validating orders...");
 		// 2. Validate the orders
 		OrderValidator orderValidator = new OrderValidator();
 		for (Order order : orders) {
 			orderValidator.validateOrder(order, restaurants);
 		}
 
+		System.out.println("Calculating flightpaths...");
 		// 3. Calculate the flightpaths for all valid orders in the exact sequence you received them
 		FlightPathCalculator flightPathCalculator = new FlightPathCalculator(orders, restaurants, centralArea, noFlyZones);
 		HashMap<String, ArrayList<Move>> flightPaths = flightPathCalculator.flightPathList();
 
+		System.out.println("Writing result files...");
 		// 4. Write the 3 result files in a folder resultfiles (create if not exists)
 		CreateFiles createFiles = new CreateFiles();
+		System.out.println("Writing deliveries...");
 		createFiles.writeDeliveries(date, orders);
+		System.out.println("Writing flightpaths...");
 		createFiles.writeFlightpath(date, flightPaths);
+		System.out.println("Writing drones...");
 		createFiles.writeDrone(date, flightPaths);
 	}
 }
