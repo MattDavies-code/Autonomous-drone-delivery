@@ -9,6 +9,7 @@ import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.model.Move;
 import uk.ac.ed.inf.model.Node;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -19,7 +20,8 @@ public class FlightPathCalculator {
 
     // Constants
     private final LngLat appletonTower = new LngLat(-3.186874, 55.944494);
-    //private final Double Hover = 999.0;
+    private static final double[] angles = {0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180, 202.5, 225, 247.5, 270, 292.5, 315, 337.5};
+
 
     private final NamedRegion[] noFlyZones;
     private final NamedRegion centralArea;
@@ -57,7 +59,7 @@ public class FlightPathCalculator {
                         flightPaths.put(order.getOrderNo(), flightPath);
                         Collections.reverse(flightPath);
                         flightPaths.put(order.getOrderNo(), flightPath);
-                        //System.out.println("Flightpath to restaurant already exists");
+
                     } else {
                         // Get end position for the order
                         LngLat endPosition = currentRestaurant.location();
@@ -72,7 +74,6 @@ public class FlightPathCalculator {
 
                         // Add flightpath to restaurant to flightpath list
                         flightPathToRestaurant.put(currentRestaurant, flightPath);
-                        System.out.println("Order Complete");
 
                     }
                     order.setOrderStatus(OrderStatus.DELIVERED);
@@ -92,32 +93,18 @@ public class FlightPathCalculator {
      * @return List of moves from start to end position
      */
     private ArrayList<Move> calculateFlightPath(Order order, LngLat start, LngLat end) {
-        // Must spend one move hovering (with angle 999) when closeTo(restaurantLocation)
-        // Must spend one move hovering (with angle 999) when closeTo(endPosition)
-        // Once back inside the central area the drone must not leave again until it has delivered the pizzas to the start position (appleton Tower)
-        // The drone must not fly over any no-fly zones
-        // can move in 16 directions, angle is in degrees
-        // hover is 999
-        // Initialize open and closed sets
-        Set<Node> openSet = new HashSet<>();
-        Set<Node> closedSet = new HashSet<>();
-
         // Heuristic function is Euclidean distance as this is admissible
         // Create the start and goal nodes
         Node startNode = new Node(start, 0, lngLatHandler.distanceTo(start, end));
-        Node goalNode = new Node(end, 0, 0);
 
-        // Add the start node to the open set
-        openSet.add(startNode);
-
+        // Initialize open and closed sets
+        ArrayList<Node> closedSet = new ArrayList<>();
+        HashMap<Node, Double> openSet = new HashMap<>(generateSuccessors(startNode, end, closedSet));
         // Initialize the start node as the current node
         Node current = startNode;
 
-        // Set max depth
-        int maxDepth = 50;
-        int depth = 0;
         // A* algorithm
-        while (!openSet.isEmpty() && depth < maxDepth) {
+        while (!lngLatHandler.isCloseTo(current.getPosition(), end)) {
             // Get the node with the lowest total cost from the open set
             current = getLowestCostNode(openSet);
 
@@ -125,47 +112,19 @@ public class FlightPathCalculator {
             openSet.remove(current);
             closedSet.add(current);
 
-            // If the goal is reached, reconstruct the path and return it
-            if (lngLatHandler.isCloseTo(current.getPosition(), goalNode.getPosition())) {
-                System.out.println("Goal reached");
-                ArrayList<Move> path = reconstructPath(current, order);
-                // Add a hover move at the end of the path
-                LngLat lastPosition = current.getPosition();
-                path.add(new Move(order.getOrderNo(), lastPosition.lng(), lastPosition.lat(), 999, lastPosition.lng(), lastPosition.lat()));
-
-                return path;
-            }
-
             // Generate successors (neighbors) of the current node
-            List<Node> successors = generateSuccessors(current, goalNode, closedSet, openSet);
-
-            for (Node neighbor : successors) {
-                // Skip if the neighbor is in the closed set
-                if (closedSet.contains(neighbor)) {
-                    continue;
-                }
-
-                // Calculate tentative cost from start to neighbor
-                double tentativeCost = current.getCostFromStart() + lngLatHandler.distanceTo(current.getPosition(), neighbor.getPosition());
-
-                // If neighbor is not in the open set or the tentative cost is lower
-                if (!openSet.contains(neighbor) || tentativeCost < neighbor.getCostFromStart()) {
-                    // Set the parent of the neighbor to the current node
-                    neighbor.setParent(current);
-
-                    // Update cost information
-                    neighbor.costFromStart = tentativeCost;
-                    neighbor.heuristicCost = lngLatHandler.distanceTo(neighbor.getPosition(), end);
-
-                    // Add the neighbor to the open set if not already present
-                    openSet.add(neighbor);
-                }
+            HashMap<Node, Double> successors = generateSuccessors(current, end, closedSet);
+            if (successors.isEmpty()) {
+                // exit the loop if no successors are generated
+                break;
             }
-            depth++;
+            for (Node successor : successors.keySet()) {
+                // Add successor to open set if not already present or update if better
+                openSet.compute(successor, (key, value) -> (value == null || successors.get(successor) < value) ? successors.get(successor) : value);
+            }
         }
-
-        // If open set is empty and goal is not reached, return an empty path
-        return new ArrayList<>();
+        // If the goal is reached, reconstruct the path and return it
+        return reconstructPath(current, order);
     }
 
     /**
@@ -173,66 +132,53 @@ public class FlightPathCalculator {
      * g = costFromStart = cost from start to current node
      * h = heuristicCost = heuristic cost from current node to goal node
      * @param current   the current node
-     * @param goalNode  the goal node
+     * @param end  the restaurant location
+     * @param closedSet the closed set
      * @return a list of successor nodes
      */
-    private List<Node> generateSuccessors(Node current, Node goalNode, Set<Node> closedSet, Set<Node> openSet) {
+    private HashMap<Node, Double> generateSuccessors(Node current, LngLat end, ArrayList<Node> closedSet) {
 
-        List<Node> successors = new ArrayList<>();
+        HashMap<Node, Double> successors = new HashMap<>();
         LngLat currentPos = current.getPosition();
-
-        // Adjust these angles based on your drone's movement capabilities
-        //double[] angles = {0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180, 202.5, 225, 247.5, 270, 292.5, 315, 337.5};
-        double[] angles = {0, 45, 90, 135, 180, 225, 270, 315};
-        //int successorsGenerated
 
         for (double angle : angles) {
             LngLat nextPos = lngLatHandler.nextPosition(currentPos, angle);
 
             Node successor = new Node(nextPos, 0, 0);
             // Skip successor if visited before
-            if (closedSet.contains(successor) || openSet.contains(successor)) {
-                continue;
-            }
-
-            // Check if the next position is inside any no-fly zones
-            boolean isInsideNoFlyZone = false;
-            for (NamedRegion noFlyZone : noFlyZones) {
-                if (lngLatHandler.isInRegion(nextPos, noFlyZone)) {
-                    isInsideNoFlyZone = true;
-                    break;
-                }
-            }
-            // Skip successor if next position is inside a no-fly zone
-            if (isInsideNoFlyZone) {
+            if (closedSet.contains(successor))  {
                 continue;
             }
 
             // Skip successor if current position is in central area and next position out of central area
-            //if (lngLatHandler.isInRegion(currentPos, centralArea) && !lngLatHandler.isInRegion(nextPos, centralArea)) {
+            //if (lngLatHandler.isInCentralArea(currentPos, centralArea) || !lngLatHandler.isInCentralArea(nextPos, centralArea)) {
             //    continue;
             //}
 
-            double costFromStart = current.getCostFromStart() + SystemConstants.DRONE_MOVE_DISTANCE;
-            double heuristicCost = lngLatHandler.distanceTo(nextPos, goalNode.getPosition());
-
-            successors.add(new Node(nextPos, costFromStart, heuristicCost));
-
+            // Skip successor if next position is inside a no-fly zone
+            boolean isInsideNoFlyZone = !Arrays.stream(noFlyZones).noneMatch(noFlyZone -> lngLatHandler.isInRegion(nextPos, noFlyZone));
+            if (isInsideNoFlyZone) {
+                continue;
+            }
+            double costFromStart = current.costFromStart + SystemConstants.DRONE_MOVE_DISTANCE;
+            double heuristicCost = lngLatHandler.distanceTo(nextPos, end);
+            //successor.costFromStart = costFromStart;
+            //System.out.println("Cost from start: " + costFromStart);
+            successor.heuristicCost = heuristicCost;
+            successor.setParent(current);
+            successors.put(successor, costFromStart + heuristicCost);
         }
         return successors;
     }
 
-
     /**
      * Get the node with the lowest total cost from the set
      *
-     * @param nodes the set of nodes to search
+     * @param nodes the Hashmap of nodes to search
      * @return the node with the lowest total cost
      */
-    private Node getLowestCostNode(Set<Node> nodes) {
-        return nodes.stream()
-                .min(Comparator.comparingDouble(Node::getTotalCost))
-                .orElse(null);
+    private Node getLowestCostNode(HashMap<Node, Double> nodes) {
+        return Collections.min(nodes.entrySet(), Comparator.comparingDouble(Map.Entry::getValue)).getKey();
     }
 
     /**
@@ -242,8 +188,9 @@ public class FlightPathCalculator {
      * @return the reconstructed path as a list of moves
      */
     private ArrayList<Move> reconstructPath(Node goalNode, Order order) {
-        System.out.println("Reconstructing path");
         ArrayList<Move> path = new ArrayList<>();
+        // Add a hover move at the end of the path
+        path.add(new Move(order.getOrderNo(), goalNode.getPosition().lng(), goalNode.getPosition().lat(), 999, goalNode.getPosition().lng(), goalNode.getPosition().lat()));
         Node current = goalNode;
 
         while (current.getParent() != null) {
@@ -261,6 +208,8 @@ public class FlightPathCalculator {
 
         // Reverse the path to get the correct order
         Collections.reverse(path);
+        // Add a hover move at the start of the path
+        path.add(new Move(order.getOrderNo(), appletonTower.lng(), appletonTower.lat(), 999, appletonTower.lng(), appletonTower.lat()));
         return path;
     }
 
@@ -295,4 +244,6 @@ public class FlightPathCalculator {
         }
         return null;
     }
+
+
 }

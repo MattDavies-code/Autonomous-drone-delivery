@@ -45,7 +45,7 @@ public class CreateFiles {
         try {
             Gson gson = createGsonWithLocalDateSerializer();
             String fileName = "deliveries-" + date + ".json";
-            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString());
+            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString(), false);
             gson.toJson(orders, writer);
             writer.close();
         } catch (IOException e) {
@@ -69,7 +69,7 @@ public class CreateFiles {
         try {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             String fileName = "flightpath-" + date + ".json";
-            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString());
+            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString(), false);
             JsonArray jsonflightpath = flightpathToJsonArray(flightpath);
             gson.toJson(jsonflightpath, writer);
             writer.close();
@@ -102,56 +102,8 @@ public class CreateFiles {
         return moveObject;
     }
 
-//    /**
-//     * The third file (drone-YYYY-MM-DD.geojson) is the drone’s flightpath in GeoJSON-format
-//     * @param flightPaths
-//     * @param date
-//     */
-//    public void writeDrone(String date, HashMap<String, ArrayList<Move>> flightPaths) {
-//        try {
-//            Gson gson = createGsonWithLocalDateSerializer();
-//            String fileName = "drone-" + date + ".geojson";
-//            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString());
-//            gson.toJson(createGeoJsonFeatureCollection(flightPaths), writer);
-//            writer.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    private HashMap<String, Object> createGeoJsonFeatureCollection(ArrayList<Move> flightpath) {
-//        HashMap<String, Object> featureCollection = new HashMap<>();
-//        ArrayList<HashMap<String, Object>> features = new ArrayList<>();
-//        HashMap<String, Object> feature = new HashMap<>();
-//        ArrayList<ArrayList<Double>> coordinates = new ArrayList<>();
-//
-//        for (Move move : flightpath) {
-//            ArrayList<Double> point = new ArrayList<>();
-//            point.add(move.getFromLng());
-//            point.add(move.getFromLat());
-//            coordinates.add(point);
-//        }
-//
-//        feature.put("type", "Feature");
-//        feature.put("geometry", createGeoJsonLineString(coordinates));
-//        features.add(feature);
-//
-//        featureCollection.put("type", "FeatureCollection");
-//        featureCollection.put("features", features);
-//
-//        return featureCollection;
-//    }
-//
-//    private HashMap<String, Object> createGeoJsonLineString(ArrayList<ArrayList<Double>> coordinates) {
-//        HashMap<String, Object> lineString = new HashMap<>();
-//        lineString.put("type", "LineString");
-//        lineString.put("coordinates", coordinates);
-//        return lineString;
-//    }
-
     /**
      * The third file (drone-YYYY-MM-DD.geojson) is the drone’s flightpath in GeoJSON-format
-     *
      * @param date        the date in the format YYYY-MM-DD
      * @param flightPaths a HashMap containing the flight paths for each order
      */
@@ -159,7 +111,7 @@ public class CreateFiles {
         try {
             Gson gson = createGsonWithLocalDateSerializer();
             String fileName = "drone-" + date + ".geojson";
-            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString());
+            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString(), false);
             gson.toJson(createGeoJsonFeatureCollection(flightPaths), writer);
             writer.close();
         } catch (IOException e) {
@@ -212,6 +164,4 @@ public class CreateFiles {
         lineString.put("coordinates", coordinates);
         return lineString;
     }
-
-
 }
