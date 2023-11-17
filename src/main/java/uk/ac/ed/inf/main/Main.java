@@ -2,7 +2,7 @@ package uk.ac.ed.inf.main;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import uk.ac.ed.inf.controller.RestController;
-import uk.ac.ed.inf.flightPath.FlightPathCalculator;
+import uk.ac.ed.inf.flightPath.FlightPaths;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.ilp.data.Restaurant;
@@ -59,8 +59,10 @@ public class Main {
 		long startTime = System.currentTimeMillis();
 		System.out.println("Calculating flightpaths...");
 		// 3. Calculate the flightpaths for all valid orders in the exact sequence you received them
-		FlightPathCalculator flightPathCalculator = new FlightPathCalculator(orders, restaurants, centralArea, noFlyZones);
-		HashMap<String, ArrayList<Move>> flightPaths = flightPathCalculator.flightPathList();
+		//FlightPathCalculator flightPathCalculator = new FlightPathCalculator(orders, restaurants, centralArea, noFlyZones);
+		//HashMap<String, ArrayList<Move>> flightPaths = flightPathCalculator.flightPathList();
+		FlightPaths flightPaths = new FlightPaths(orders, restaurants, centralArea, noFlyZones);
+		HashMap<String, ArrayList<Move>> flightPathsFiles = flightPaths.flightPathList();
 
 		long endTime = System.currentTimeMillis();
 		long executionTime = endTime - startTime;
@@ -72,9 +74,9 @@ public class Main {
 		System.out.println("Writing deliveries...");
 		createFiles.writeDeliveries(date, orders);
 		System.out.println("Writing flightpaths...");
-		createFiles.writeFlightpath(date, flightPaths);
+		createFiles.writeFlightpath(date, flightPathsFiles);
 		System.out.println("Writing drones...");
-		createFiles.writeDrone(date, flightPaths);
+		createFiles.writeDrone(date, flightPathsFiles);
 
 
 

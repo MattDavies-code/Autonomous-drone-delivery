@@ -27,8 +27,8 @@ public class RestController {
 
     //restServerUrl = "https://ilp-rest.azurewebsites.net";
     //date = "2023-11-15";
-    private String date;
-    private String restServerUrl;
+    private final String date;
+    private final String restServerUrl;
 
     /**
      * sets the date and restServerUrl
@@ -54,8 +54,7 @@ public class RestController {
         String ordersUrl = restServerUrl + "/orders/" + date;
         String response = restTemplate.getForObject(ordersUrl, String.class);
         // Convert the JSON string to an array of Order objects using LocalDateDeserializer
-        Order[] orders = gson.fromJson(response, Order[].class);
-        return orders;
+        return gson.fromJson(response, Order[].class);
     }
 
     /**
@@ -66,8 +65,7 @@ public class RestController {
         String restaurantsUrl = restServerUrl + "/restaurants";
         String response = restTemplate.getForObject(restaurantsUrl, String.class);
 
-        Restaurant[] definedRestaurants = objectMapper.readValue(response, new TypeReference<>() {});
-        return definedRestaurants;
+        return objectMapper.readValue(response, new TypeReference<>() {});
     }
 
     /**
@@ -80,8 +78,7 @@ public class RestController {
         String response = restTemplate.getForObject(noFlyZonesUrl, String.class);
 
         // Deserialize the JSON response into a list of no-fly zones
-        NamedRegion[] noFlyZones = objectMapper.readValue(response, new TypeReference<>() {});
-        return noFlyZones;
+        return objectMapper.readValue(response, new TypeReference<>() {});
     }
 
     /**
@@ -94,7 +91,6 @@ public class RestController {
         String response = restTemplate.getForObject(centralAreaUrl, String.class);
 
         // Deserialize the JSON response into a CentralArea object
-        NamedRegion centralArea = objectMapper.readValue(response, new TypeReference<>() {});
-        return centralArea;
+        return objectMapper.readValue(response, new TypeReference<>() {});
     }
 }

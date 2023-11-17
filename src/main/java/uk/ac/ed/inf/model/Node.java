@@ -6,25 +6,36 @@ import uk.ac.ed.inf.ilp.data.LngLat;
  * Model of a node
  * Utilised in A* pathfinding algorithm
  */
-public class Node {
-    private final LngLat position;
+public class Node implements Comparable<Node> {
+    public LngLat position;
     public Node parent;
-    public double costFromStart;
-    public double heuristicCost;
+    public double g;
+    public double h;
+    public double f;
     public double angle;
 
     /**
      * Constructor for a node
      * @param position
-     * @param costFromStart
-     * @param heuristicCost
      */
-    public Node(LngLat position, Node parent, double costFromStart, double heuristicCost, double angle) {
+    public Node(LngLat position) {
         this.position = position;
-        this.parent = parent;
-        this.costFromStart = costFromStart;
-        this.heuristicCost = heuristicCost;
-        this.angle = angle;
+        parent = null;
+        g = 0;
+        h = 0;
+        f = 0;
+
+    }
+
+    public int compareTo(Node node) {
+        if (this.f < node.f) {
+            return -1;
+        } else if (this.f > node.f) {
+            return 1;
+        } else {
+            return 0;
+        }
+
     }
 
     /**
@@ -39,12 +50,12 @@ public class Node {
         return parent;
     }
 
-    public double getCostFromStart() {
-        return costFromStart;
+    public double getG() {
+        return g;
     }
 
-    public double getHeuristicCost() {
-        return heuristicCost;
+    public double getH() {
+        return h;
     }
 
     public double getAngle() {
@@ -57,11 +68,15 @@ public class Node {
      * @param costFromStart, heuristicCost, parent
      */
     public void setCostFromStart(double costFromStart) {
-        this.costFromStart = costFromStart;
+        this.g = costFromStart;
     }
 
     public void setHeuristicCost(double heuristicCost) {
-        this.heuristicCost = heuristicCost;
+        this.h = heuristicCost;
+    }
+
+    public void setTotalCost(double totalCost) {
+    	this.f = totalCost;
     }
 
     public void setParent(Node parent) {
