@@ -7,19 +7,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import uk.ac.ed.inf.ilp.constant.OrderStatus;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.ilp.data.Order;
-import uk.ac.ed.inf.validator.OrderValidator;
 import uk.ac.ed.inf.ilp.gsonUtils.LocalDateDeserializer;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Rest Controller
@@ -49,7 +44,6 @@ public class RestController {
      * returns the orders by date in the system and validates them using OrderValidator
      * @return List<Order>
      */
-    //@GetMapping("/orders")
     public Order[] fetchOrders() {
         // Create a custom Gson instance with the LocalDateDeserializer
         Gson gson = new GsonBuilder()
@@ -80,7 +74,6 @@ public class RestController {
      * returns the no-fly zones from the Rest Server
      * @return List<NamedRegion>
      */
-    //@GetMapping("/noFlyZones")
     public NamedRegion[] fetchNoFlyZones() throws JsonProcessingException {
         // Fetch noFlyZones from the REST server
         String noFlyZonesUrl = restServerUrl + "/noFlyZones";
@@ -95,7 +88,6 @@ public class RestController {
      * returns the central area from the Rest Server
      * @return NamedRegion
      */
-    //@GetMapping("/centralArea")
     public NamedRegion fetchCentralArea() throws JsonProcessingException {
         // Fetch the central area from the REST server
         String centralAreaUrl = restServerUrl + "/centralArea";

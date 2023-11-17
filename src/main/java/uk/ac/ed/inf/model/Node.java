@@ -8,9 +8,10 @@ import uk.ac.ed.inf.ilp.data.LngLat;
  */
 public class Node {
     private final LngLat position;
+    public Node parent;
     public double costFromStart;
     public double heuristicCost;
-    private Node parent;
+    public double angle;
 
     /**
      * Constructor for a node
@@ -18,10 +19,12 @@ public class Node {
      * @param costFromStart
      * @param heuristicCost
      */
-    public Node(LngLat position, double costFromStart, double heuristicCost) {
+    public Node(LngLat position, Node parent, double costFromStart, double heuristicCost, double angle) {
         this.position = position;
+        this.parent = parent;
         this.costFromStart = costFromStart;
         this.heuristicCost = heuristicCost;
+        this.angle = angle;
     }
 
     /**
@@ -32,6 +35,10 @@ public class Node {
         return position;
     }
 
+    public Node getParent() {
+        return parent;
+    }
+
     public double getCostFromStart() {
         return costFromStart;
     }
@@ -40,19 +47,29 @@ public class Node {
         return heuristicCost;
     }
 
-    public double getTotalCost() {
-        return costFromStart + heuristicCost;
+    public double getAngle() {
+    	return angle;
     }
 
-    public Node getParent() {
-        return parent;
-    }
 
     /**
-     * Setter method for the parent node
-     * @param parent The parent node
+     * Setter methods
+     * @param costFromStart, heuristicCost, parent
      */
+    public void setCostFromStart(double costFromStart) {
+        this.costFromStart = costFromStart;
+    }
+
+    public void setHeuristicCost(double heuristicCost) {
+        this.heuristicCost = heuristicCost;
+    }
+
     public void setParent(Node parent) {
         this.parent = parent;
     }
+
+    public void setAngle(double angle) {
+    	this.angle = angle;
+    }
+
 }

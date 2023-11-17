@@ -16,6 +16,7 @@ import java.util.HashMap;
 
 public class Main {
 	public static void main(String[] args) throws JsonProcessingException {
+
 		System.out.println("Starting System...");
 		// Check if the correct number of command-line arguments is provided
 		if (args.length != 2) {
@@ -55,10 +56,15 @@ public class Main {
 			orderValidator.validateOrder(order, restaurants);
 		}
 
+		long startTime = System.currentTimeMillis();
 		System.out.println("Calculating flightpaths...");
 		// 3. Calculate the flightpaths for all valid orders in the exact sequence you received them
 		FlightPathCalculator flightPathCalculator = new FlightPathCalculator(orders, restaurants, centralArea, noFlyZones);
 		HashMap<String, ArrayList<Move>> flightPaths = flightPathCalculator.flightPathList();
+
+		long endTime = System.currentTimeMillis();
+		long executionTime = endTime - startTime;
+		System.out.println("Execution time: " + executionTime + " milliseconds");
 
 		System.out.println("Writing result files...");
 		// 4. Write the 3 result files in a folder resultfiles (create if not exists)
@@ -69,6 +75,9 @@ public class Main {
 		createFiles.writeFlightpath(date, flightPaths);
 		System.out.println("Writing drones...");
 		createFiles.writeDrone(date, flightPaths);
+
+
+
 	}
 }
 

@@ -25,7 +25,7 @@ public class Move {
      * @param toLongitude end longitude
      * @param toLatitude end latitude
      */
-    public Move(String orderNo, double fromLongitude, double fromLatitude, int angle, double toLongitude, double toLatitude){
+    public Move(String orderNo, double fromLongitude, double fromLatitude, double angle, double toLongitude, double toLatitude){
         this.orderNo = orderNo;
         this.fromLongitude = fromLongitude;
         this.fromLatitude = fromLatitude;
