@@ -2,6 +2,8 @@ package uk.ac.ed.inf.model;
 
 import uk.ac.ed.inf.ilp.data.LngLat;
 
+import java.util.Objects;
+
 /**
  * Model of a node
  * Utilised in A* pathfinding algorithm
@@ -24,7 +26,21 @@ public class Node implements Comparable<Node> {
         g = 0;
         h = 0;
         f = 0;
+    }
 
+    public boolean equals(Object obj){
+        if(this == obj){
+            return true;
+        }
+
+        if(!(obj instanceof Node node)){
+            return false;
+        }
+        return node.position.equals(position);
+    }
+
+    public int hashCode() {
+        return Objects.hash(position, g, parent);
     }
 
     public int compareTo(Node node) {
@@ -67,18 +83,15 @@ public class Node implements Comparable<Node> {
      * Setter methods
      * @param costFromStart, heuristicCost, parent
      */
-    public void setCostFromStart(double costFromStart) {
-        this.g = costFromStart;
+    public void setG(double g) {
+        this.g = g;
     }
-
-    public void setHeuristicCost(double heuristicCost) {
-        this.h = heuristicCost;
+    public void setH(double h) {
+        this.h = h;
     }
-
-    public void setTotalCost(double totalCost) {
-    	this.f = totalCost;
+    public void setF(double f) {
+        this.f = f;
     }
-
     public void setParent(Node parent) {
         this.parent = parent;
     }

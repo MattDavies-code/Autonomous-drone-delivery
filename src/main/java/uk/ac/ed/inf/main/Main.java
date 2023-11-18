@@ -59,8 +59,6 @@ public class Main {
 		long startTime = System.currentTimeMillis();
 		System.out.println("Calculating flightpaths...");
 		// 3. Calculate the flightpaths for all valid orders in the exact sequence you received them
-		//FlightPathCalculator flightPathCalculator = new FlightPathCalculator(orders, restaurants, centralArea, noFlyZones);
-		//HashMap<String, ArrayList<Move>> flightPaths = flightPathCalculator.flightPathList();
 		FlightPaths flightPaths = new FlightPaths(orders, restaurants, centralArea, noFlyZones);
 		HashMap<String, ArrayList<Move>> flightPathsFiles = flightPaths.flightPathList();
 

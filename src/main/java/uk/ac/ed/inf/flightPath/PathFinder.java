@@ -43,37 +43,42 @@ public class PathFinder {
 
         openSet.add(start);
         while (!openSet.isEmpty()) {
+
             Node current = openSet.poll();
             closedSet.add(current);
+
             if (lngLatHandler.isCloseTo(current.position, end.position)){
                 return reconstructPath(current, order);
             }
+
             // Generate successors (neighbors) of the current node
             for (double angle : angles) {
                 LngLat successorPosition = lngLatHandler.nextPosition(current.position, angle);
+                Node successor = new Node(successorPosition);
 
-                if ((!closedSet.contains(new Node(successorPosition)))
+                if ((!closedSet.contains(successor))
                         && (!isInNoFlyZone(successorPosition))
-                        ){
-                    double tentativeG = current.g + SystemConstants.DRONE_MOVE_DISTANCE;
+                        && (!goingBackIntoCentral(successorPosition, current.position))){
 
-                    Node successorExists = findSuccessor(successorPosition);
+                    double tentativeG = (current.getG() + SystemConstants.DRONE_MOVE_DISTANCE)*.99;
+
+                    Node successorExists = findSuccessor(successor);
+
                     if (successorExists != null){
                         if (tentativeG < successorExists.g){
                             // Update the costs and parent node
-                            successorExists.parent = current;
-                            successorExists.g = tentativeG;
-                            successorExists.h = lngLatHandler.distanceTo(successorExists.position, end.position);
-                            successorExists.f = successorExists.g + successorExists.h;
-                            successorExists.angle = angle;
+                            successorExists.setParent(current);
+                            successorExists.setG(tentativeG);
+                            successorExists.setH(lngLatHandler.distanceTo(successorPosition, end.position));
+                            successorExists.setF(successorExists.g + successorExists.h);
+                            successorExists.setAngle(angle);
                         }
                     } else {
-                        Node successor = new Node(successorPosition);
-                        successor.parent = current;
-                        successor.g = tentativeG;
-                        successor.h = lngLatHandler.distanceTo(successorPosition, end.position);
-                        successor.f = successor.g + successor.h;
-                        successor.angle = angle;
+                        successor.setParent(current);
+                        successor.setG(tentativeG);
+                        successor.setH(lngLatHandler.distanceTo(successorPosition, end.position));
+                        successor.setF(successor.g + successor.h);
+                        successor.setAngle(angle);
 
                         openSet.add(successor);
                     }
@@ -97,31 +102,30 @@ public class PathFinder {
         return false;
     }
 
-    private boolean isCentralValid(LngLat successorPosition, LngLat currentPosition) {
-        return (!lngLatHandler.isInRegion(currentPosition, centralArea)) && (lngLatHandler.isInRegion(successorPosition, centralArea));
+    /**
+     *
+     * @param successorPosition the position of the successor node
+     * @param currentPosition the position of the current node
+     * @return true if the successor node is in the central area and has not left yet, false otherwise
+     */
+    private boolean goingBackIntoCentral(LngLat successorPosition, LngLat currentPosition) {
+        boolean isCurrentOutside = !lngLatHandler.isInRegion(currentPosition, centralArea);
+        boolean isSuccessorInside = lngLatHandler.isInRegion(successorPosition, centralArea);
+        return isCurrentOutside && isSuccessorInside;
     }
 
     /**
      * Find a successor node in the open set
-     * @param position the position of the successor node
+     * @param successor the successor node
      * @return the successor node
      */
-    private Node findSuccessor(LngLat position) {
-        if(openSet.isEmpty()){
-            return null;
-        }
-
-        Iterator<Node> iterator = openSet.iterator();
-
-        Node find = null;
-        while (iterator.hasNext()) {
-            Node next = iterator.next();
-            if(next.getPosition() == position){
-                find = next;
-                break;
+    private Node findSuccessor(Node successor) {
+        for (Node node : openSet) {
+            if (node.equals(successor)) {
+                return node;
             }
         }
-        return find;
+        return null;
     }
 
     /**

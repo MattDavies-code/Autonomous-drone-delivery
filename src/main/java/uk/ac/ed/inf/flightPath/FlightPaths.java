@@ -47,28 +47,45 @@ public class FlightPaths {
                     Restaurant currentRestaurant = getRestaurant(order);
                     //System.out.println("Current Restaurant: " + currentRestaurant.name());
                     if (flightPathToRestaurant.containsKey(currentRestaurant)) {
+
+                        // Get the flightpath to the restaurant if it exists and add it to the flightpaths list
                         ArrayList<Move> flightPath = flightPathToRestaurant.get(currentRestaurant);
 
-                        // Add the flightpath and reverse flightpath to the flightpaths list
-                        flightPaths.put(order.getOrderNo(), flightPath);
-                        Collections.reverse(flightPath);
-                        flightPaths.put(order.getOrderNo(), flightPath);
+                        // Create a return path by reversing the moves in the original path
+                        ArrayList<Move> returnPath = new ArrayList<>(flightPath);
+                        Collections.reverse(returnPath);
+
+                        // Join the return path to the original path
+                        ArrayList<Move> fullPath = new ArrayList<>(flightPath);
+                        fullPath.addAll(returnPath);
+
+                        // Add the full flightpath to the flightpaths list
+                        flightPaths.put(order.getOrderNo(), fullPath);
+
 
                     } else {
                         // Get end position for the order
-                        LngLat endPosition = currentRestaurant.location();
+                        LngLat endPosition = null;
+                        if (currentRestaurant != null) {
+                            endPosition = currentRestaurant.location();
+                        }
 
                         // Calculate the flight path for a single order
                         ArrayList<Move> flightPath = pathFinder.findPath(appletonTower, endPosition, order);
 
-                        // Add the flightpath and reverse flightpath to the flightpaths list
-                        flightPaths.put(order.getOrderNo(), flightPath);
-                        Collections.reverse(flightPath);
-                        flightPaths.put(order.getOrderNo(), flightPath);
-
                         // Add flightpath to restaurant to flightpath list
                         flightPathToRestaurant.put(currentRestaurant, flightPath);
 
+                        // Create a return path by reversing the moves in the original path
+                        ArrayList<Move> returnPath = new ArrayList<>(flightPath);
+                        Collections.reverse(returnPath);
+
+                        // Join the return path to the original path
+                        ArrayList<Move> fullPath = new ArrayList<>(flightPath);
+                        fullPath.addAll(returnPath);
+
+                        // Add the full flightpath to the flightpaths list
+                        flightPaths.put(order.getOrderNo(), fullPath);
                     }
                     order.setOrderStatus(OrderStatus.DELIVERED);
                 } catch (Exception e) {

@@ -25,8 +25,6 @@ public class RestController {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    //restServerUrl = "https://ilp-rest.azurewebsites.net";
-    //date = "2023-11-15";
     private final String date;
     private final String restServerUrl;
 
@@ -39,6 +37,22 @@ public class RestController {
         this.date = date;
         this.restServerUrl = restServerUrl;
     }
+
+    /**
+     * Attempts to access the isAlive endpoint to check if API is dead
+     *
+     * @return: If the API can be accessed correctly
+     */
+    public boolean isAlive() {
+        try {
+            String isAliveUrl = restServerUrl + "/isAlive";
+            restTemplate.getForObject(isAliveUrl, String.class);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 
     /**
      * returns the orders by date in the system and validates them using OrderValidator
