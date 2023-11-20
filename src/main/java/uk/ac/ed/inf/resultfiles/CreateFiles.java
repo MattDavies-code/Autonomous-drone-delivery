@@ -18,12 +18,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Creates a directory for the result files
+ * Creates a directory for the result files and writes the result files to the directory
  */
 public class CreateFiles {
+
     // All result files are written to the directory resultFiles
     private final Path resultFiles;
 
+    /**
+     * Creates a directory for the result files
+     */
     public CreateFiles() {
         // Use an absolute path for the resultFiles directory
         this.resultFiles = FileSystems.getDefault().getPath(System.getProperty("user.dir"), "resultFiles");
@@ -31,15 +35,15 @@ public class CreateFiles {
         try {
             Files.createDirectories(this.resultFiles);
         } catch (IOException e) {
-            // Log the exception for debugging purposes
-            e.printStackTrace();
+            System.err.println("An error occurred creating the resultFiles directory: " + e.getMessage());
+            System.exit(1);
         }
     }
 
     /**
      * The first file (deliveries-YYYY-MM-DD.json) records both the deliveries and non-deliveries made by the drone
-     * @param orders
-     * @param date
+     * @param orders the orders that were retrieved
+     * @param date the date of the orders that were retrieved
      */
     public void writeDeliveries(String date, Order[] orders) {
         try {
@@ -49,10 +53,15 @@ public class CreateFiles {
             gson.toJson(orders, writer);
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("An error occurred writing the deliveries file: " + e.getMessage());
+            System.exit(1);
         }
     }
 
+    /**
+     * Create a custom Gson instance with the LocalDateSerializer
+     * @return Gson
+     */
     private Gson createGsonWithLocalDateSerializer() {
         return new GsonBuilder()
                 .registerTypeAdapter(LocalDate.class, new LocalDateSerializer())
@@ -62,8 +71,8 @@ public class CreateFiles {
 
     /**
      * The second file (flightpath-YYYY-MM-DD.json) records the flightpath of the drone move-by-move
-     * @param flightpath
-     * @param date
+     * @param date the date of the orders that were retrieved
+     * @param flightpath the flightpath of the drone move-by-move for every order
      */
     public void writeFlightpath(String date, HashMap<String, ArrayList<Move>> flightpath) {
         try {
@@ -74,10 +83,16 @@ public class CreateFiles {
             gson.toJson(jsonflightpath, writer);
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("An error occurred writing the flightpath file: " + e.getMessage());
+            System.exit(1);
         }
     }
 
+    /**
+     * Converts a HashMap of flightpaths to a JsonArray
+     * @param flightpath the flightpath of the drone move-by-move for every order
+     * @return JsonArray
+     */
     private JsonArray flightpathToJsonArray(HashMap<String, ArrayList<Move>> flightpath) {
         JsonArray jsonArray = new JsonArray();
 
@@ -90,6 +105,13 @@ public class CreateFiles {
         return jsonArray;
     }
 
+
+    /**
+     * Create a JsonObject for a move
+     * @param orderNo the order number
+     * @param move the move
+     * @return Move JsonObject
+     */
     private JsonObject createMoveJsonObject(String orderNo, Move move) {
         JsonObject moveObject = new JsonObject();
         moveObject.addProperty("orderNo", orderNo);
@@ -115,10 +137,16 @@ public class CreateFiles {
             gson.toJson(createGeoJsonFeatureCollection(flightPaths), writer);
             writer.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("An error occurred writing the drone file: " + e.getMessage());
+            System.exit(1);
         }
     }
 
+    /**
+     * Create a GeoJson feature collection
+     * @param flightPaths a HashMap containing the flight paths for each order
+     * @return HashMap containing the GeoJson feature collection
+     */
     private HashMap<String, Object> createGeoJsonFeatureCollection(HashMap<String, ArrayList<Move>> flightPaths) {
         HashMap<String, Object> featureCollection = new HashMap<>();
         ArrayList<HashMap<String, Object>> features = new ArrayList<>();
@@ -134,6 +162,12 @@ public class CreateFiles {
         return featureCollection;
     }
 
+    /**
+     * Create a GeoJson feature
+     * @param orderNo the order number
+     * @param flightPath the flight path for a single order
+     * @return HashMap containing the GeoJson feature
+     */
     private HashMap<String, Object> createFeature(String orderNo, ArrayList<Move> flightPath) {
         HashMap<String, Object> feature = new HashMap<>();
         ArrayList<ArrayList<Double>> coordinates = new ArrayList<>();
@@ -152,12 +186,22 @@ public class CreateFiles {
         return feature;
     }
 
+    /**
+     * Create the properties for a GeoJson feature
+     * @param orderNo the order number
+     * @return HashMap containing the properties
+     */
     private HashMap<String, Object> createProperties(String orderNo) {
         HashMap<String, Object> properties = new HashMap<>();
         properties.put("orderNo", orderNo);
         return properties;
     }
 
+    /**
+     * Create a GeoJson line string
+     * @param coordinates the coordinates for the line string
+     * @return HashMap containing the GeoJson line string
+     */
     private HashMap<String, Object> createGeoJsonLineString(ArrayList<ArrayList<Double>> coordinates) {
         HashMap<String, Object> lineString = new HashMap<>();
         lineString.put("type", "LineString");

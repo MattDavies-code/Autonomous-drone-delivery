@@ -1,4 +1,4 @@
-package uk.ac.ed.inf;
+package uk.ac.ed.inf.FlightPath;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;

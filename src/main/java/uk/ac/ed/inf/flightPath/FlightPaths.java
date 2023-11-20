@@ -12,13 +12,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
+/**
+ * Class to calculate flight paths for all orders for the day
+ */
 public class FlightPaths {
 
     // Constants
     private final LngLat appletonTower = new LngLat(-3.186874, 55.944494);
 
-    private final NamedRegion[] noFlyZones;
-    private final NamedRegion centralArea;
     private final Order[] orders;
     private final Restaurant[] restaurants;
     private final PathFinder pathFinder;
@@ -26,25 +27,27 @@ public class FlightPaths {
     public FlightPaths(Order[] validOrders, Restaurant[] restaurants, NamedRegion centralArea, NamedRegion[] noFlyZones) {
         this.orders = validOrders;
         this.restaurants = restaurants;
-        this.centralArea = centralArea;
-        this.noFlyZones = noFlyZones;
         this.pathFinder = new PathFinder(noFlyZones, centralArea);
     }
 
     /**
      * Make flight paths for orders in the exact sequence as they are received
+     * Utilises the PathFinder class to calculate the flight paths
      * @return HashMap of flight paths
      */
     public HashMap<String, ArrayList<Move>> flightPathList() {
         HashMap<String, ArrayList<Move>> flightPaths = new HashMap<>();
-        // Flightpaths to be stored and reused
+
+        // Flight-paths to be stored and reused if the restaurant has already been travelled to
         HashMap<Restaurant, ArrayList<Move>> flightPathToRestaurant = new HashMap<>();
-        // Calculate the flightpath for all valid orders in the exact sequence you receive them
+
         for (Order order : orders) {
             if (order.getOrderStatus() == OrderStatus.VALID_BUT_NOT_DELIVERED) {
                 try {
+
                     // Check if flightpath to restaurant already exists
                     Restaurant currentRestaurant = getRestaurant(order);
+
                     //System.out.println("Current Restaurant: " + currentRestaurant.name());
                     if (flightPathToRestaurant.containsKey(currentRestaurant)) {
 
@@ -54,6 +57,11 @@ public class FlightPaths {
                         // Create a return path by reversing the moves in the original path
                         ArrayList<Move> returnPath = new ArrayList<>(flightPath);
                         Collections.reverse(returnPath);
+
+                        // Remove the first hover move at the restaurant from the return path
+                        if (!returnPath.isEmpty()) {
+                            returnPath.remove(0);
+                        }
 
                         // Join the return path to the original path
                         ArrayList<Move> fullPath = new ArrayList<>(flightPath);
@@ -80,6 +88,11 @@ public class FlightPaths {
                         ArrayList<Move> returnPath = new ArrayList<>(flightPath);
                         Collections.reverse(returnPath);
 
+                        // Remove the first hover move at the restaurant from the return path
+                        if (!returnPath.isEmpty()) {
+                            returnPath.remove(0);
+                        }
+
                         // Join the return path to the original path
                         ArrayList<Move> fullPath = new ArrayList<>(flightPath);
                         fullPath.addAll(returnPath);
@@ -104,8 +117,10 @@ public class FlightPaths {
     private Restaurant getRestaurant(Order order) {
         Restaurant restaurant;
         for (Restaurant currentRestaurant : restaurants) {
+
             // Check if the restaurant has the first pizza in the order
             if (Arrays.asList(currentRestaurant.menu()).contains(order.getPizzasInOrder()[0])) {
+
                 // Get the location of the restaurant for the order
                 restaurant = currentRestaurant;
                 return restaurant;

@@ -5,7 +5,11 @@ import uk.ac.ed.inf.ilp.data.LngLat;
 import uk.ac.ed.inf.ilp.data.NamedRegion;
 import uk.ac.ed.inf.ilp.interfaces.LngLatHandling;
 
+/**
+ * This class is used to handle LngLat objects in the PathFinder class
+ */
 public class LngLatHandler implements LngLatHandling {
+
     /**
      * get the distance between two positions
      * @param startPosition is where the start is
@@ -18,6 +22,7 @@ public class LngLatHandler implements LngLatHandling {
         double changeInY = endPosition.lat() - startPosition.lat();
         return Math.sqrt((Math.pow(changeInX, 2)) + (Math.pow(changeInY, 2)));
     }
+
     /**
      * check if two positions are close (< than SystemConstants.DRONE_IS_CLOSE_DISTANCE)
      * @param startPosition is the starting position
@@ -27,11 +32,12 @@ public class LngLatHandler implements LngLatHandling {
     @Override
     public boolean isCloseTo(LngLat startPosition, LngLat otherPosition) {
         double distance = distanceTo(startPosition, otherPosition);
-        return distance < SystemConstants.DRONE_IS_CLOSE_DISTANCE; //changed to < according to Spec as it is a strict inequality
+        return distance < SystemConstants.DRONE_IS_CLOSE_DISTANCE; //changed to < according to Specification as it is a strict inequality
     }
 
     /**
      * check if the @position is in the @region (includes the border)
+     * casts a ray from the point towards any direction and counting the number of times the ray intersects with the edges of the polygon.
      * @param position to check
      * @param region as a closed polygon
      * @return if the position is inside the region (including the border)
@@ -39,12 +45,13 @@ public class LngLatHandler implements LngLatHandling {
     @Override
     public boolean isInRegion(LngLat position, NamedRegion region) {
         LngLat[] vertices = region.vertices();
-        // Ray Casting Algorithm
-        // Casts a ray from the point towards any direction and counting the number of times the ray intersects with the edges of the polygon.
+
         // If the number of intersections is odd the point is inside the polygon
         int numOfIntersections = 0;
+
         for (int i = 0; i < vertices.length; i++) {
             LngLat vertex1 = vertices[i];
+
             // Will account for the edge connecting the last and first vertex
             LngLat vertex2 = vertices[(i + 1) % vertices.length];
 
@@ -52,6 +59,7 @@ public class LngLatHandler implements LngLatHandling {
             boolean condition1 = vertex1.lat() > position.lat() != vertex2.lat() > position.lat();
             boolean condition2 = position.lng() < (vertex2.lng() - vertex1.lng()) * (position.lat() - vertex1.lat()) /
                     (vertex2.lat() - vertex1.lat()) + vertex1.lng();
+
             if (condition1 && condition2) {
                 numOfIntersections++;
             }
@@ -68,9 +76,8 @@ public class LngLatHandler implements LngLatHandling {
      */
     @Override
     public LngLat nextPosition(LngLat startPosition, double angle) {
-        // Tells the drone to hover in place when provided the special value
-        if (angle == 999) {return startPosition;}
 
+        // Convert the angle to radians as Math.cos and Math.sin take radians as input
         double angleInRadians = Math.toRadians(angle);
         double newLng = startPosition.lng() + (SystemConstants.DRONE_MOVE_DISTANCE * Math.cos(angleInRadians));
         double newLat = startPosition.lat() + (SystemConstants.DRONE_MOVE_DISTANCE * Math.sin(angleInRadians));

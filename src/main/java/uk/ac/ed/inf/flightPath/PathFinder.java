@@ -9,6 +9,9 @@ import uk.ac.ed.inf.model.Node;
 
 import java.util.*;
 
+/**
+ * PathFinder class that calculates the flight path for a single order using the A* algorithm
+ */
 public class PathFinder {
 
     private final NamedRegion[] noFlyZones;
@@ -44,9 +47,15 @@ public class PathFinder {
         openSet.add(start);
         while (!openSet.isEmpty()) {
 
+            // Get the node with the lowest f value from the priority queue
             Node current = openSet.poll();
+            if (current == null) {
+                // Handles the case where openSet.poll() returns null (openSet is empty)
+                continue;
+            }
             closedSet.add(current);
 
+            // If goal is reached, reconstruct the path and return it
             if (lngLatHandler.isCloseTo(current.position, end.position)){
                 return reconstructPath(current, order);
             }
@@ -60,7 +69,9 @@ public class PathFinder {
                         && (!isInNoFlyZone(successorPosition))
                         && (!goingBackIntoCentral(successorPosition, current.position))){
 
-                    double tentativeG = (current.getG() + SystemConstants.DRONE_MOVE_DISTANCE)*.99;
+                    // Calculate the tentative g value which is the actual distance the drone has travelled
+                    // Weighted by 0.75 to encourage the drone to move in a straight line
+                    double tentativeG = (current.getG() + SystemConstants.DRONE_MOVE_DISTANCE) *.75;
 
                     Node successorExists = findSuccessor(successor);
 
@@ -74,6 +85,7 @@ public class PathFinder {
                             successorExists.setAngle(angle);
                         }
                     } else {
+                        // Update the costs and parent node
                         successor.setParent(current);
                         successor.setG(tentativeG);
                         successor.setH(lngLatHandler.distanceTo(successorPosition, end.position));
@@ -89,9 +101,9 @@ public class PathFinder {
     }
 
     /**
-     * Check if the successor node is in a no fly zone
+     * Check if the successor node is in a no-fly zone
      * @param successorPosition the position of the successor node
-     * @return true if the successor node is in a no fly zone, false otherwise
+     * @return true if the successor node is in a no-fly zone, false otherwise
      */
     private boolean isInNoFlyZone(LngLat successorPosition) {
         for (NamedRegion noFlyZone : noFlyZones) {
@@ -103,7 +115,7 @@ public class PathFinder {
     }
 
     /**
-     *
+     * Check that once the drone has left the central area, it does not go back into it
      * @param successorPosition the position of the successor node
      * @param currentPosition the position of the current node
      * @return true if the successor node is in the central area and has not left yet, false otherwise
@@ -121,6 +133,8 @@ public class PathFinder {
      */
     private Node findSuccessor(Node successor) {
         for (Node node : openSet) {
+
+            // Utilises 'equals' method in Node class
             if (node.equals(successor)) {
                 return node;
             }
@@ -135,11 +149,13 @@ public class PathFinder {
      */
     private ArrayList<Move> reconstructPath(Node goalNode, Order order) {
         ArrayList<Move> path = new ArrayList<>();
+
         // Add a hover move at the end of the path
         path.add(new Move(order.getOrderNo(), goalNode.getPosition().lng(), goalNode.getPosition().lat(), 999, goalNode.getPosition().lng(), goalNode.getPosition().lat()));
         Node current = goalNode;
 
         while (current.getParent() != null) {
+
             // Construct a Move object from the current node and its parent
             LngLat from = current.getParent().getPosition();
             LngLat to = current.getPosition();
@@ -150,6 +166,7 @@ public class PathFinder {
             // Move to the parent node
             current = current.getParent();
         }
+
         // Add a hover move at the start of the path
         path.add(new Move(order.getOrderNo(), appletonTower.lng(), appletonTower.lat(), 999, appletonTower.lng(), appletonTower.lat()));
         Collections.reverse(path);

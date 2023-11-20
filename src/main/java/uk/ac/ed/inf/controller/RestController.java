@@ -17,9 +17,8 @@ import uk.ac.ed.inf.ilp.gsonUtils.LocalDateDeserializer;
 import java.time.LocalDate;
 
 /**
- * Rest Controller
+ * Controller that is used to fetch data from the Rest Server
  */
-//@org.springframework.web.bind.annotation.RestController
 public class RestController {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -30,8 +29,8 @@ public class RestController {
 
     /**
      * sets the date and restServerUrl
-     * @param date
-     * @param restServerUrl
+     * @param date the date of the orders to be retrieved
+     * @param restServerUrl the URL of the Rest Server
      */
     public RestController(String date, String restServerUrl) {
         this.date = date;
@@ -39,9 +38,8 @@ public class RestController {
     }
 
     /**
-     * Attempts to access the isAlive endpoint to check if API is dead
-     *
-     * @return: If the API can be accessed correctly
+     * Attempts to access the isAlive endpoint to check if API is dead or alive
+     * @return If the API can be accessed correctly
      */
     public boolean isAlive() {
         try {
@@ -49,13 +47,13 @@ public class RestController {
             restTemplate.getForObject(isAliveUrl, String.class);
             return true;
         } catch (Exception e) {
+            System.err.println("The Rest Service is unreachable: " + e.getMessage());
             return false;
         }
     }
 
-
     /**
-     * returns the orders by date in the system and validates them using OrderValidator
+     * Fetches the orders by date in the system
      * @return List<Order>
      */
     public Order[] fetchOrders() {
@@ -72,22 +70,24 @@ public class RestController {
     }
 
     /**
-     * returns the restaurants from the Rest Server
+     * Fetches the restaurants from the Rest Server
      * @return List<Restaurant>
      */
     public Restaurant[] fetchRestaurants() throws JsonProcessingException {
+        // Fetch the restaurants from the REST server
         String restaurantsUrl = restServerUrl + "/restaurants";
         String response = restTemplate.getForObject(restaurantsUrl, String.class);
 
+        // Deserialize the JSON response into a list of restaurants
         return objectMapper.readValue(response, new TypeReference<>() {});
     }
 
     /**
-     * returns the no-fly zones from the Rest Server
+     * Fetches the no-fly zones from the Rest Server
      * @return List<NamedRegion>
      */
     public NamedRegion[] fetchNoFlyZones() throws JsonProcessingException {
-        // Fetch noFlyZones from the REST server
+        // Fetch the no-fly zones from the REST server
         String noFlyZonesUrl = restServerUrl + "/noFlyZones";
         String response = restTemplate.getForObject(noFlyZonesUrl, String.class);
 
@@ -96,7 +96,7 @@ public class RestController {
     }
 
     /**
-     * returns the central area from the Rest Server
+     * Fetches the central area from the Rest Server
      * @return NamedRegion
      */
     public NamedRegion fetchCentralArea() throws JsonProcessingException {

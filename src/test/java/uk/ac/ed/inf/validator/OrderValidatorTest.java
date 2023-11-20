@@ -1,4 +1,4 @@
-package uk.ac.ed.inf;
+package uk.ac.ed.inf.validator;
 
 import static org.junit.Assert.assertEquals;
 

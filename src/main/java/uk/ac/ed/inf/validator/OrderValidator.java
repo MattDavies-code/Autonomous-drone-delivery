@@ -19,15 +19,17 @@ import java.util.List;
  * Implements order validation interface
  */
 public class OrderValidator implements OrderValidation {
+
     /**
      * @param orderToValidate    is the order which needs validation
      * @param definedRestaurants is the vector of defined restaurants with their according menu structure
      * @return the validated order
-     */
+     **/
     @Override
     public Order validateOrder(Order orderToValidate, Restaurant[] definedRestaurants) {
-        /**
-         * Validate Card Number
+
+        /*
+          Validate Card Number
          */
         String creditCardNumber = orderToValidate.getCreditCardInformation().getCreditCardNumber();
         if (creditCardNumber == null || !(creditCardNumber.matches("\\d{16}")) || !creditCardNumber.matches("\\d+")) {
@@ -35,8 +37,9 @@ public class OrderValidator implements OrderValidation {
             orderToValidate.setOrderValidationCode(OrderValidationCode.CARD_NUMBER_INVALID);
             return orderToValidate;
         }
-        /**
-         * Validate Card Expiry Date (format)
+
+        /*
+          Validate Card Expiry Date (format)
          */
         String expiryDate = orderToValidate.getCreditCardInformation().getCreditCardExpiry();
         String[] expiryDateSplit = expiryDate.split("/");
@@ -48,7 +51,7 @@ public class OrderValidator implements OrderValidation {
             return orderToValidate;
         }
 
-        /**
+        /*
          * Validate Expiration Date (date)
          */
         int orderMonth = orderToValidate.getOrderDate().getMonthValue();
@@ -59,7 +62,7 @@ public class OrderValidator implements OrderValidation {
                 return orderToValidate;
         }
 
-        /**
+        /*
          * Validate CVV
          */
         if (orderToValidate.getCreditCardInformation().getCvv() == null || !(orderToValidate.getCreditCardInformation().getCvv().matches("\\d{3}")) || !creditCardNumber.matches("\\d+")) {
@@ -68,7 +71,7 @@ public class OrderValidator implements OrderValidation {
             return orderToValidate;
         }
 
-        /**
+        /*
          * Validate if order has no pizzas
          */
         if (orderToValidate.getPizzasInOrder().length == 0) {
@@ -77,7 +80,7 @@ public class OrderValidator implements OrderValidation {
             return orderToValidate;
         }
 
-        /**
+        /*
          * Validate if total is correct
          */
         // The total includes an order charge
@@ -92,7 +95,7 @@ public class OrderValidator implements OrderValidation {
             return orderToValidate;
         }
 
-        /**
+        /*
          * Validate if order exceeds max pizzas per order
          */
         if (orderToValidate.getPizzasInOrder().length > SystemConstants.MAX_PIZZAS_PER_ORDER) {
@@ -101,7 +104,7 @@ public class OrderValidator implements OrderValidation {
             return orderToValidate;
         }
 
-        /**
+        /*
          * Validate if Pizza Defined in Menu
          */
         // List of all pizzas from any restaurant
@@ -120,7 +123,7 @@ public class OrderValidator implements OrderValidation {
             }
         }
 
-        /**
+        /*
          * Validate Pizza From Multiple Restaurants
          */
         // Create a list of the restaurants in which the pizzas in the order
@@ -147,8 +150,8 @@ public class OrderValidator implements OrderValidation {
             return orderToValidate;
         }
 
-        /**
-         * Validate Restaurant Open
+        /*
+         * Validate Restaurant Open on Order Date
          */
         // Can use restaurantNamesOfPizzas as previous validation eliminates multiple types
         LocalDate orderDate = orderToValidate.getOrderDate();

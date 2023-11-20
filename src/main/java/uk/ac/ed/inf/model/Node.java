@@ -9,6 +9,7 @@ import java.util.Objects;
  * Utilised in A* pathfinding algorithm
  */
 public class Node implements Comparable<Node> {
+
     public LngLat position;
     public Node parent;
     public double g;
@@ -28,6 +29,12 @@ public class Node implements Comparable<Node> {
         f = 0;
     }
 
+    /**
+     * Overriding equals method to compare nodes
+     * @param obj
+     * @return true if the node is equal to the object
+     */
+    @Override
     public boolean equals(Object obj){
         if(this == obj){
             return true;
@@ -39,10 +46,17 @@ public class Node implements Comparable<Node> {
         return node.position.equals(position);
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(position, g, parent);
     }
 
+    /**
+     * Used to order priority queue
+     * @param node
+     * @return -1 if the node is less than the object, 1 if the node is greater than the object, 0 if they are equal
+     */
+    @Override
     public int compareTo(Node node) {
         if (this.f < node.f) {
             return -1;
@@ -56,7 +70,7 @@ public class Node implements Comparable<Node> {
 
     /**
      * Getter methods
-     * @return position, costFromStart, heuristicCost, parent
+     * @return position, parent, g, h, f
      */
     public LngLat getPosition() {
         return position;
@@ -81,7 +95,6 @@ public class Node implements Comparable<Node> {
 
     /**
      * Setter methods
-     * @param costFromStart, heuristicCost, parent
      */
     public void setG(double g) {
         this.g = g;
@@ -95,7 +108,6 @@ public class Node implements Comparable<Node> {
     public void setParent(Node parent) {
         this.parent = parent;
     }
-
     public void setAngle(double angle) {
     	this.angle = angle;
     }

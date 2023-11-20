@@ -3,7 +3,11 @@ package uk.ac.ed.inf.validator;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+/**
+ * Class to validate arguments passed into the main method
+ */
 public class ArgumentValidator {
+
     /**
      * Check if the date is valid
      * @param date the date to check
