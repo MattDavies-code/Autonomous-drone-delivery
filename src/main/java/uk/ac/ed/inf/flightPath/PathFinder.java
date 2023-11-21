@@ -71,7 +71,7 @@ public class PathFinder {
 
                     // Calculate the tentative g value which is the actual distance the drone has travelled
                     // Weighted by 0.75 to encourage the drone to move in a straight line
-                    double tentativeG = (current.getG() + SystemConstants.DRONE_MOVE_DISTANCE) *.75;
+                    double tentativeG = current.getG() + SystemConstants.DRONE_MOVE_DISTANCE;
 
                     Node successorExists = findSuccessor(successor);
 
@@ -81,7 +81,8 @@ public class PathFinder {
                             successorExists.setParent(current);
                             successorExists.setG(tentativeG);
                             successorExists.setH(lngLatHandler.distanceTo(successorPosition, end.position));
-                            successorExists.setF(successorExists.g + successorExists.h);
+                            // Heuristic weighted by 1.25 to encourage the drone to move towards the goal
+                            successorExists.setF(successorExists.g + successorExists.h * 1.25);
                             successorExists.setAngle(angle);
                         }
                     } else {
@@ -89,7 +90,8 @@ public class PathFinder {
                         successor.setParent(current);
                         successor.setG(tentativeG);
                         successor.setH(lngLatHandler.distanceTo(successorPosition, end.position));
-                        successor.setF(successor.g + successor.h);
+                        // Heuristic weighted by 1.25 to encourage the drone to move towards the goal
+                        successor.setF(successor.g + successor.h * 1.25);
                         successor.setAngle(angle);
 
                         openSet.add(successor);

@@ -19,7 +19,7 @@ public class Node implements Comparable<Node> {
 
     /**
      * Constructor for a node
-     * @param position
+     * @param position of the node
      */
     public Node(LngLat position) {
         this.position = position;
@@ -31,7 +31,7 @@ public class Node implements Comparable<Node> {
 
     /**
      * Overriding equals method to compare nodes
-     * @param obj
+     * @param obj the other node to compare the node to
      * @return true if the node is equal to the object
      */
     @Override
@@ -53,19 +53,12 @@ public class Node implements Comparable<Node> {
 
     /**
      * Used to order priority queue
-     * @param node
+     * @param node the other node to compare the node to
      * @return -1 if the node is less than the object, 1 if the node is greater than the object, 0 if they are equal
      */
     @Override
     public int compareTo(Node node) {
-        if (this.f < node.f) {
-            return -1;
-        } else if (this.f > node.f) {
-            return 1;
-        } else {
-            return 0;
-        }
-
+        return Double.compare(this.f, node.f);
     }
 
     /**
