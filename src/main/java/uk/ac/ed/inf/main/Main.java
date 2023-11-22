@@ -71,6 +71,12 @@ public class Main {
 			System.exit(1);
 		}
 
+		// Check if there are orders present for the passed date
+		if (orders.length == 0) {
+			System.err.println("No orders present for the passed date. Exiting.");
+			System.exit(1);
+		}
+
 		// 2. Validate the orders
 		System.out.println("Validating orders...");
 		OrderValidator orderValidator = new OrderValidator();
