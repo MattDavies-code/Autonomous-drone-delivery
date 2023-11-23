@@ -7,7 +7,9 @@ This coursework involves the creation of a runnable application, which can be st
 bash
 Copy code
 java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
+
 Application Features
+
 Read Orders: Fetch orders for the specified day, including restaurant information and other relevant data, from the REST-Server whose URL is provided as a parameter.
 
 Validate Orders: Ensure the validity of the received orders.
