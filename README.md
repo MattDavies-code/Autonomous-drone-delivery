@@ -1,11 +1,38 @@
-**Informatics Large Practical
-**
-"PizzaDronz offers a solution to students grappling with sustenance challenges during intense coding sessions. The system being proposed will implement an algorithm to control the flight of the drone as it makes its deliveries while respecting the constraints on drone movement and integrating with an online system developed by the School of Informatics, that will track the placement and tracking of pizza orders. By addressing the nuanced process of pizza ordering and delivery, PizzaDronz enhances the overall experience and well-being of students."
+Informatics Large Practical - PizzaDronz
+PizzaDronz offers a innovative solution to students facing sustenance challenges during intense coding sessions. The proposed system implements an algorithm to control the flight of a drone, ensuring efficient deliveries while adhering to constraints on drone movement. This system seamlessly integrates with an online platform developed by the School of Informatics, allowing for the tracking of pizza orders. By addressing the nuanced process of pizza ordering and delivery, PizzaDronz enhances the overall experience and well-being of students.
 
-In general, This cooursework is about creating a runnable application, which can be started like:java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
+Overview
+This coursework involves the creation of a runnable application, which can be started using the following command:
 
-The Application:
-  • Read orders for the specified day (and only the day) and restaurants plus otherrelevant data from the REST-Server whose URL is passed in (see the spec)o Orders retrieved for a day will only contain data for that day as the REST-Serveronly delivers filtered data if queried by date. 
-  • Validate orders
-  • Calculate the flightpaths for all valid orders in the exact sequence you received them. 
-  • Write the 3 result files in a folder resultfiles (create if not exists)
+bash
+Copy code
+java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
+Application Features
+Read Orders: Fetch orders for the specified day, including restaurant information and other relevant data, from the REST-Server whose URL is provided as a parameter.
+
+Validate Orders: Ensure the validity of the received orders.
+
+Calculate Flightpaths: Determine the optimal flightpaths for all valid orders in the exact sequence they were received.
+
+Result Files: Write the three result files in a folder named resultfiles (create the folder if it does not exist).
+
+Usage
+Clone the repository:
+
+bash
+Copy code
+git clone https://github.com/your-username/PizzaDronz.git
+Navigate to the project directory:
+
+bash
+Copy code
+cd PizzaDronz
+Run the application with the specified command:
+
+bash
+Copy code
+java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
+Note
+Orders retrieved for a day will only contain data for that specific day, as the REST-Server delivers filtered data when queried by date.
+
+Ensure that the resultfiles folder exists to store the generated result files.
