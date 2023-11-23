@@ -24,17 +24,19 @@ Clone the repository:
 bash
 Copy code
 git clone https://github.com/your-username/PizzaDronz.git
+
 Navigate to the project directory:
 
 bash
 Copy code
 cd PizzaDronz
+
 Run the application with the specified command:
 
 bash
 Copy code
 java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
-Note
-Orders retrieved for a day will only contain data for that specific day, as the REST-Server delivers filtered data when queried by date.
 
-Ensure that the resultfiles folder exists to store the generated result files.
+Note
+
+Orders retrieved for a day will only contain data for that specific day, as the REST-Server delivers filtered data when queried by date.
