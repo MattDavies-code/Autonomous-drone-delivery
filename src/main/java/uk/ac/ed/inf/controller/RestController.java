@@ -66,7 +66,13 @@ public class RestController {
         String ordersUrl = restServerUrl + "/orders/" + date;
         String response = restTemplate.getForObject(ordersUrl, String.class);
         // Convert the JSON string to an array of Order objects using LocalDateDeserializer
-        return gson.fromJson(response, Order[].class);
+        try {
+            return gson.fromJson(response, Order[].class);
+        } catch (Exception e) {
+            System.err.println("An error occurred fetching the orders: " + e.getMessage());
+            System.exit(1);
+            return null;
+        }
     }
 
     /**
@@ -79,7 +85,13 @@ public class RestController {
         String response = restTemplate.getForObject(restaurantsUrl, String.class);
 
         // Deserialize the JSON response into a list of restaurants
-        return objectMapper.readValue(response, new TypeReference<>() {});
+        try {
+            return objectMapper.readValue(response, new TypeReference<>() {});
+        } catch (Exception e) {
+            System.err.println("An error occurred fetching the restaurants: " + e.getMessage());
+            System.exit(1);
+            return null;
+        }
     }
 
     /**
@@ -92,7 +104,13 @@ public class RestController {
         String response = restTemplate.getForObject(noFlyZonesUrl, String.class);
 
         // Deserialize the JSON response into a list of no-fly zones
-        return objectMapper.readValue(response, new TypeReference<>() {});
+        try {
+            return objectMapper.readValue(response, new TypeReference<>() {});
+        } catch (Exception e) {
+            System.err.println("An error occurred fetching the no-fly zones: " + e.getMessage());
+            System.exit(1);
+            return null;
+        }
     }
 
     /**
@@ -105,6 +123,12 @@ public class RestController {
         String response = restTemplate.getForObject(centralAreaUrl, String.class);
 
         // Deserialize the JSON response into a CentralArea object
-        return objectMapper.readValue(response, new TypeReference<>() {});
+        try {
+            return objectMapper.readValue(response, new TypeReference<>() {});
+        } catch (Exception e) {
+            System.err.println("An error occurred fetching the central area: " + e.getMessage());
+            System.exit(1);
+            return null;
+        }
     }
 }

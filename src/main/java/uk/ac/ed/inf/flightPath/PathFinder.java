@@ -108,6 +108,10 @@ public class PathFinder {
      * @return true if the successor node is in a no-fly zone, false otherwise
      */
     private boolean isInNoFlyZone(LngLat successorPosition) {
+        if (noFlyZones == null) {
+            return false;
+        }
+
         for (NamedRegion noFlyZone : noFlyZones) {
             if (lngLatHandler.isInRegion(successorPosition, noFlyZone)) {
                 return true;
@@ -134,6 +138,9 @@ public class PathFinder {
      * @return the successor node
      */
     private Node findSuccessor(Node successor) {
+        if (openSet == null) {
+            return null;
+        }
         for (Node node : openSet) {
 
             // Utilises 'equals' method in Node class

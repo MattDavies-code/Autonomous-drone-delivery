@@ -15,7 +15,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Creates a directory for the result files and writes the result files to the directory
@@ -47,10 +50,15 @@ public class CreateFiles {
      */
     public void writeDeliveries(String date, Order[] orders) {
         try {
+            // Convert Order objects to SimplifiedOrder objects to remove unnecessary fields
+            List<SimplifiedOrder> simplifiedOrders = Arrays.stream(orders)
+                    .map(SimplifiedOrder::fromOrder)
+                    .collect(Collectors.toList());
+
             Gson gson = createGsonWithLocalDateSerializer();
             String fileName = "deliveries-" + date + ".json";
             FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString(), false);
-            gson.toJson(orders, writer);
+            gson.toJson(simplifiedOrders, writer);
             writer.close();
         } catch (IOException e) {
             System.err.println("An error occurred writing the deliveries file: " + e.getMessage());
