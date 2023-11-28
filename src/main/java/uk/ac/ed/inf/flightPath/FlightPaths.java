@@ -7,10 +7,7 @@ import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.ilp.data.Restaurant;
 import uk.ac.ed.inf.model.Move;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Class to calculate flight paths for all orders for the day
@@ -36,7 +33,7 @@ public class FlightPaths {
      * @return HashMap of flight paths
      */
     public HashMap<String, ArrayList<Move>> flightPathList() {
-        HashMap<String, ArrayList<Move>> flightPaths = new HashMap<>();
+        LinkedHashMap<String, ArrayList<Move>> flightPaths = new LinkedHashMap<>();
 
         // Flight-paths to be stored and reused if the restaurant has already been travelled to
         HashMap<Restaurant, ArrayList<Move>> flightPathToRestaurant = new HashMap<>();
