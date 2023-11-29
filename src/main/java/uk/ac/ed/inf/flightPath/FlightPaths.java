@@ -64,6 +64,11 @@ public class FlightPaths {
                         ArrayList<Move> fullPath = new ArrayList<>(flightPath);
                         fullPath.addAll(returnPath);
 
+                        // Remove the first hover move at appleton tower from the full path
+                        if (!fullPath.isEmpty()) {
+                            fullPath.remove(0);
+                        }
+
                         // Add the full flightpath to the flightpaths list
                         flightPaths.put(order.getOrderNo(), fullPath);
 
@@ -93,6 +98,11 @@ public class FlightPaths {
                         // Join the return path to the original path
                         ArrayList<Move> fullPath = new ArrayList<>(flightPath);
                         fullPath.addAll(returnPath);
+
+                        // Remove the first hover move at appleton tower from the full path
+                        if (!fullPath.isEmpty()) {
+                            fullPath.remove(0);
+                        }
 
                         // Add the full flightpath to the flightpaths list
                         flightPaths.put(order.getOrderNo(), fullPath);
