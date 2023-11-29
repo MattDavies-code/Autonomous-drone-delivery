@@ -51,9 +51,19 @@ public class FlightPaths {
                         // Get the flightpath to the restaurant if it exists and add it to the flightpaths list
                         ArrayList<Move> flightPath = flightPathToRestaurant.get(currentRestaurant);
 
-                        // Create a return path by reversing the moves in the original path
-                        ArrayList<Move> returnPath = new ArrayList<>(flightPath);
-                        Collections.reverse(returnPath);
+                        // Create a return path by creating new moves using the moves in the original path
+                        ArrayList<Move> returnPath = new ArrayList<>();
+                        for (int i = flightPath.size() - 1; i >= 0; i--) {
+                            if (i == 0) {
+                                // Don't change the hover move at appleton tower
+                                returnPath.add(flightPath.get(i));
+                            } else {
+                                Move move = flightPath.get(i);
+                                // Create a new move with the from and to values swapped and the angle in the opposite direction
+                                Move returnMove = new Move(move.getOrderNo(), move.getToLng(), move.getToLat(), ((move.getAngle() + 180) % 360), move.getFromLng(), move.getFromLat());
+                                returnPath.add(returnMove);
+                            }
+                        }
 
                         // Remove the first hover move at the restaurant from the return path
                         if (!returnPath.isEmpty()) {
@@ -72,7 +82,6 @@ public class FlightPaths {
                         // Add the full flightpath to the flightpaths list
                         flightPaths.put(order.getOrderNo(), fullPath);
 
-
                     } else {
                         // Get end position for the order
                         LngLat endPosition = null;
@@ -86,9 +95,19 @@ public class FlightPaths {
                         // Add flightpath to restaurant to flightpath list
                         flightPathToRestaurant.put(currentRestaurant, flightPath);
 
-                        // Create a return path by reversing the moves in the original path
-                        ArrayList<Move> returnPath = new ArrayList<>(flightPath);
-                        Collections.reverse(returnPath);
+                        // Create a return path by creating new moves using the moves in the original path
+                        ArrayList<Move> returnPath = new ArrayList<>();
+                        for (int i = flightPath.size() - 1; i >= 0; i--) {
+                            if (i == 0) {
+                                // Don't change the hover move at appleton tower
+                                returnPath.add(flightPath.get(i));
+                            } else {
+                                Move move = flightPath.get(i);
+                                // Create a new move with the from and to values swapped and the angle in the opposite direction
+                                Move returnMove = new Move(move.getOrderNo(), move.getToLng(), move.getToLat(), ((move.getAngle() + 180) % 360), move.getFromLng(), move.getFromLat());
+                                returnPath.add(returnMove);
+                            }
+                        }
 
                         // Remove the first hover move at the restaurant from the return path
                         if (!returnPath.isEmpty()) {
