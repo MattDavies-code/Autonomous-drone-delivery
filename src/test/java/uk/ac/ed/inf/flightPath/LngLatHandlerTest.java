@@ -1,4 +1,4 @@
-package uk.ac.ed.inf.FlightPath;
+package uk.ac.ed.inf.flightPath;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.junit.Assert.assertEquals;
@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import uk.ac.ed.inf.flightPath.LngLatHandler;
 import uk.ac.ed.inf.ilp.constant.SystemConstants;
 import uk.ac.ed.inf.ilp.data.*;
 

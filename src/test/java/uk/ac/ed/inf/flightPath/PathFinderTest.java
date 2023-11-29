@@ -1,8 +1,6 @@
-package uk.ac.ed.inf.FlightPath;
+package uk.ac.ed.inf.flightPath;
 
 import org.junit.Test;
-import uk.ac.ed.inf.flightPath.PathFinder;
-import uk.ac.ed.inf.ilp.constant.OrderStatus;
 import uk.ac.ed.inf.ilp.data.*;
 import uk.ac.ed.inf.model.Move;
 import uk.ac.ed.inf.validator.OrderValidator;

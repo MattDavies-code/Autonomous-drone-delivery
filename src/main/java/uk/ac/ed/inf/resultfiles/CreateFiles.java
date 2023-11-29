@@ -142,6 +142,12 @@ public class CreateFiles {
             Gson gson = createGsonWithLocalDateSerializer();
             String fileName = "drone-" + date + ".geojson";
             FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString(), false);
+            // if there are no deliveries, create an empty file with just {} in it
+            if (flightPaths.isEmpty()) {
+                writer.write("{}");
+                writer.close();
+                return;
+            }
             gson.toJson(createGeoJsonFeatureCollection(flightPaths), writer);
             writer.close();
         } catch (IOException e) {
