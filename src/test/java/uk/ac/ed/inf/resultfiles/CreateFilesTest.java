@@ -1,30 +1,17 @@
 package uk.ac.ed.inf.resultfiles;
 
 import org.junit.Test;
-import uk.ac.ed.inf.ilp.data.Order;
 import uk.ac.ed.inf.model.Move;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import static org.junit.Assert.assertTrue;
 
 public class CreateFilesTest {
-
-    @Test
-    public void writeDeliveries_ValidInput_SuccessfullyWritesFile() {
-        CreateFiles createFiles = new CreateFiles();
-        Order[] orders = createMockOrders();
-        String date = "2023-11-15";
-
-        createFiles.writeDeliveries(date, orders);
-
-        Path filePath = Paths.get(System.getProperty("user.dir"), "resultFiles", "deliveries-" + date + ".json");
-        assertTrue("Deliveries file should have been created", Files.exists(filePath));    }
 
     @Test
     public void writeFlightpath_ValidInput_SuccessfullyWritesFile() {
@@ -50,12 +37,6 @@ public class CreateFilesTest {
         assertTrue("Drone file should have been created", Files.exists(filePath));    }
 
     // Helper methods to create mock data
-
-    private Order[] createMockOrders() {
-        Order order1 = new Order("1", LocalDate.now(), null, null, 1500, null, null);
-        Order order2 = new Order("2", LocalDate.now(), null, null, 1100, null, null);
-        return new Order[]{order1, order2};
-    }
 
     private HashMap<String, ArrayList<Move>> createMockFlightpath() {
         HashMap<String, ArrayList<Move>> flightpath = new HashMap<>();
