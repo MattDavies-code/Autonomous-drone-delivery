@@ -77,10 +77,6 @@ public class Node implements Comparable<Node> {
         return g;
     }
 
-    public double getH() {
-        return h;
-    }
-
     public double getAngle() {
     	return angle;
     }

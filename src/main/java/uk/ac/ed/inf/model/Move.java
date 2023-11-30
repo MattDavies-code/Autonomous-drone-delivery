@@ -59,27 +59,4 @@ public class Move {
     public double getToLat() {
         return toLatitude;
     }
-
-    /**
-     * Setter methods
-     * @param orderNo, fromLongitude, fromLatitude, angle, toLongitude, toLatitude
-     */
-    public void setOrderNo(String orderNo) {
-        this.orderNo = orderNo;
-    }
-    public void setFromLng(double fromLongitude) {
-        this.fromLongitude = fromLongitude;
-    }
-    public void setFromLat(double fromLatitude) {
-        this.fromLatitude = fromLatitude;
-    }
-    public void setAngle(double angle) {
-        this.angle = angle;
-    }
-    public void setToLng(double toLongitude) {
-        this.toLongitude = toLongitude;
-    }
-    public void setToLat(double toLatitude) {
-        this.toLatitude = toLatitude;
-    }
 }
