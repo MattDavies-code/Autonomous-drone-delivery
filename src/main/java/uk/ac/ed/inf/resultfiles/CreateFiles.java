@@ -26,17 +26,17 @@ import java.util.stream.Collectors;
 public class CreateFiles {
 
     // All result files are written to the directory resultFiles
-    private final Path resultFiles;
+    private final Path resultfiles;
 
     /**
      * Creates a directory for the result files
      */
     public CreateFiles() {
         // Use an absolute path for the resultFiles directory
-        this.resultFiles = FileSystems.getDefault().getPath(System.getProperty("user.dir"), "resultFiles");
+        this.resultfiles = FileSystems.getDefault().getPath(System.getProperty("user.dir"), "resultfiles");
 
         try {
-            Files.createDirectories(this.resultFiles);
+            Files.createDirectories(this.resultfiles);
         } catch (IOException e) {
             System.err.println("An error occurred creating the resultFiles directory: " + e.getMessage());
             System.exit(1);
@@ -57,7 +57,7 @@ public class CreateFiles {
 
             Gson gson = createGsonWithLocalDateSerializer();
             String fileName = "deliveries-" + date + ".json";
-            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString(), false);
+            FileWriter writer = new FileWriter(resultfiles.resolve(fileName).toString(), false);
             gson.toJson(simplifiedOrders, writer);
             writer.close();
         } catch (IOException e) {
@@ -86,7 +86,7 @@ public class CreateFiles {
         try {
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             String fileName = "flightpath-" + date + ".json";
-            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString(), false);
+            FileWriter writer = new FileWriter(resultfiles.resolve(fileName).toString(), false);
             JsonArray jsonflightpath = flightpathToJsonArray(flightpath);
             gson.toJson(jsonflightpath, writer);
             writer.close();
@@ -141,7 +141,7 @@ public class CreateFiles {
         try {
             Gson gson = createGsonWithLocalDateSerializer();
             String fileName = "drone-" + date + ".geojson";
-            FileWriter writer = new FileWriter(resultFiles.resolve(fileName).toString(), false);
+            FileWriter writer = new FileWriter(resultfiles.resolve(fileName).toString(), false);
             // if there are no deliveries, create an empty file with just {} in it
             if (flightPaths.isEmpty()) {
                 writer.write("{}");
