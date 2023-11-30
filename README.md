@@ -6,8 +6,6 @@ PizzaDronz offers a innovative solution to students facing sustenance challenges
 
 This coursework involves the creation of a runnable application, which can be started using the following command:
 
-bash
-Copy code
 java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
 
 **Application Features**
