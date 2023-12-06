@@ -22,20 +22,10 @@ Result Files: Write the three result files in a folder named resultfiles (create
 
 Clone the repository:
 
-bash
-Copy code
-git clone https://github.com/your-username/PizzaDronz.git
-
 Navigate to the project directory:
-
-bash
-Copy code
-cd PizzaDronz
 
 Run the application with the specified command:
 
-bash
-Copy code
 java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
 
 **Note**
