@@ -1,10 +1,8 @@
-**Informatics Large Practical** - PizzaDronz
-
-PizzaDronz offers a innovative solution to students facing sustenance challenges during intense coding sessions. The proposed system implements an algorithm to control the flight of a drone, ensuring efficient deliveries while adhering to constraints on drone movement. This system seamlessly integrates with an online platform developed by the School of Informatics, allowing for the tracking of pizza orders. By addressing the nuanced process of pizza ordering and delivery, PizzaDronz enhances the overall experience and well-being of students.
 
 **Overview**
 
-This coursework involves the creation of a runnable application, which can be started using the following command:
+The proposed system implements an algorithm to control the flight of a drone, ensuring efficient deliveries while adhering to constraints on drone movement.
+The runnable application is started using the following command:
 
 java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
 
