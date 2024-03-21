@@ -1,30 +1,55 @@
-
-**Overview**
-
+# Autonomous Drone Delivery
 The proposed system implements an algorithm to control the flight of a drone, ensuring efficient deliveries while adhering to constraints on drone movement.
-The runnable application is started using the following command:
 
-java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
+Run by: java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
 
-**Application Features**
+### Table of Contents
 
-Read Orders: Fetch orders for the specified day, including restaurant information and other relevant data, from the REST-Server whose URL is provided as a parameter.
+1. [Project Motivation](#motivation)
+2. [File Descriptions](#files)
+3. [Testing](#testing)
+4. [Results](#results)
+5. [Licensing, Authors, and Acknowledgements](#licensing)
 
-Validate Orders: Ensure the validity of the received orders.
+## Project Motivation<a name="motivation"></a>
+This Project was created for my Informatics Large Practical Module. I achieved a mark of 87%.
 
-Calculate Flightpaths: Determine the optimal flightpaths for all valid orders in the exact sequence they were received.
+## File Descriptions <a name="files"></a>
 
-Result Files: Write the three result files in a folder named resultfiles (create the folder if it does not exist).
+RestController.java: Fetches data from the Rest Server.  
+FlightPaths.java: Calculates flightpaths for all orders in a day.  
+LngLatHandler.java: Handles LngLat objects in the PathFinder class.  
+PathFinder.java: Calculates the flight path for a single order using the A* algorithm.  
+Main.java: Handles input and runs the application.  
+Move.java:  Model for a single move from one node to another. Used for recording the drone flight path move by move to be used in flightpath json file.  
+Node.java: Model of a node. Utilised in A* pathfinding algorithm
+CreateFiles.java: Creates a directory for the result files and writes the result files to the directory. Handles conversion of JSON
+SimplifiedOrder.java: Model of simplified order used for creating files
+ArguementValidator.java: Validates arguements given to the application.
+OrderValidator.java: Validates orders retrieved to fit standard.
 
-**Usage**
+![image](https://github.com/MattDavies-code/Autonomous-drone-delivery/assets/54101905/6d406a40-be8c-471c-be01-f773d6714a00)
 
-Clone the repository:
+## Testing<a name="testing"></a
 
-Navigate to the project directory:
+Tests are found in the /src/tests.  
 
-Run the application with the specified command:
+Tests include: 
+Stress tests
+Unit tests
+Integration tests
+System tests
+Timing tests
+Scenario tests
 
-java -jar PizzaDronz-1.0-SNAPSHOT.jar 2023-11-15 https://ilp-rest.azurewebsites.net
+## Results<a name="results"></a>
+
+Example results for the orders placed on 2023-11-15: 
+![AutoDrone](https://github.com/MattDavies-code/Autonomous-drone-delivery/assets/54101905/b509fb45-f134-4345-bdc8-8c5b8e0edf3b)
+
+
+## Licensing, Authors, Acknowledgements<a name="licensing"></a>
+Matthew Davies
 
 **Note**
 
