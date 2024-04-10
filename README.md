@@ -28,6 +28,8 @@ SimplifiedOrder.java: Model of simplified order used for creating files
 ArguementValidator.java: Validates arguements given to the application.
 OrderValidator.java: Validates orders retrieved to fit standard.
 
+Mockup of a the interaction with a web based applicaiton
+
 ![image](https://github.com/MattDavies-code/Autonomous-drone-delivery/assets/54101905/6d406a40-be8c-471c-be01-f773d6714a00)
 
 ## Testing <a name="testing">
